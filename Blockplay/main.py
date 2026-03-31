@@ -172,6 +172,60 @@ b1 = pygame.image.load('./Blockplay/textures/backround1.png').convert_alpha()
 sho = pygame.image.load('./Blockplay/textures/pixel-48x16.png').convert_alpha()
 backround1 = pygame.transform.scale(b1, screen.get_size())
 
+def generate(number, multiplier):
+    platformpositions_x = []
+    platformpositions_y = []
+    x = 0
+    y = 0
+    for i in range(number):
+        platformpositions_x.insert(i,x)
+        x = x + 70 + random.randint(20,70)
+        platformpositions_y.insert(i,y)
+        y = y + random.randint(-60,60)
+    return platformpositions_x, platformpositions_y
+#print(generate(20))
+
+def game(number):
+    global gen, p1, p2, p3, p4, p5
+    if gen == 1:
+        global platformpositions
+        platformpositions = generate(number)
+        print("check")
+        platformpositions_x = platformpositions[0]
+        platformpositions_y = platformpositions[1]
+        p1.location = 0
+        p2.location = 1
+        gen = 0
+    
+    platformpositions_x = platformpositions[0]
+    platformpositions_y = platformpositions[1]
+    print(platformpositions_x[p2.location])
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+        cam.x -= 5
+    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        cam.x += 5
+    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+        cam.y += 5
+    if keys[pygame.K_UP] or keys[pygame.K_w]:
+        cam.y -= 5
+    if keys[pygame.K_b]:
+        menu = 1
+    
+    p1.update(platformpositions_x[p1.location]-cam.x, platformpositions_y[p1.location]+cam.y,scale)
+    p1.show()
+    p2.update(platformpositions_x[p2.location]-cam.x, platformpositions_y[p2.location]+cam.y,scale)
+    p2.show()
+    pass
+
+cam = camera()
+p1 = platform()
+p2 = platform()
+p3 = platform()
+p4 = platform()
+p5 = platform()
+
 while running:
     update()
     mouse.pos = pygame.mouse.get_pos()
