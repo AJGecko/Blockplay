@@ -19,6 +19,7 @@ A Python-based game powered by **Pygame**.
 | **Move** | `W`, `A`, `S`, `D` or **Arrow Keys** |
 | **Jump** | `Space`, `W` or `Up Arrow`    |
 | **Fast Fall** | `S` or **Down Arrow** |
+| **Main Menu** | `C` for color scheme change |
 > ⚠️ **Current Limitation:** There is no finish line in the current version. You can return to the main menu at any time by pressing **`B`**.
 
 ---
