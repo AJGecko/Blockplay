@@ -4,7 +4,7 @@
 
 A Python-based game powered by **Pygame**.
 
-**Current Version:** `0.0.4`
+**Current Version:** `0.0.5`
 
 ---
 ## Currently planned
