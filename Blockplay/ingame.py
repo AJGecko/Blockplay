@@ -198,11 +198,11 @@ def game(number):
 
     if jump == 1:
         if cam.y - camy_storage >= 200 and cam.y - camy_storage < 300:
-            cam.y += 8
+            cam.y += 7
         elif cam.y - camy_storage >= 300:
             jump = 0
         else:
-            cam.y += 12
+            cam.y += 10
 
     #hitbox (collision check)
     player_world_x = cam.x + (player1.x / scale / cam.fov)
