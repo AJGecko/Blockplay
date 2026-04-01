@@ -228,10 +228,10 @@ def game(number):
     gravity = 1
     
     #debug
-    if keys[pygame.K_r]:
-        gen = 1
-    if keys[pygame.K_o]:
-        cam.y += 10
+    #if keys[pygame.K_r]:
+    #    gen = 1
+    #if keys[pygame.K_o]:
+    #    cam.y += 10
 
     #game display and update
     player1.update(0+(10*player1.direction),0,scale)
