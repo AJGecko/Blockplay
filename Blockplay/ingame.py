@@ -3,12 +3,15 @@ import essentials as es
 import random
 from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parent
+ASSETS = BASE_DIR / "textures"
+
 midx,midy,width,height,events,scale = es.basis()
 screen = pygame.display.get_surface()
 font = pygame.font.SysFont(None, 32)
-platform_texture = pygame.image.load('./Blockplay/textures/pixel-64x128.png').convert_alpha()
+platform_texture = pygame.image.load(str(ASSETS / 'pixel-64x128.png')).convert_alpha()
 
-player_dir = Path("./Blockplay/textures/player")
+player_dir = ASSETS / 'player'
 player_entries = player_dir.iterdir()
 folders = []
 for p in player_entries:
@@ -23,7 +26,7 @@ print(folder_names)
 player_texture = []
 for p in folder_names:
     out = []
-    for png_file in sorted(Path("./Blockplay/textures/player/" + p).glob("*.png")):
+    for png_file in sorted((player_dir / p).glob("*.png")):
         out.append(pygame.image.load(str(png_file)).convert_alpha())
     player_texture.append(out)
 
@@ -108,9 +111,13 @@ class platform:
         self.x = (platformpositions_x[self.location]-cam.x)*scale*cam.fov
         self.y = (platformpositions_y[self.location]+cam.y)*scale*cam.fov
         self.lscale = scale
-        if (platformpositions_x[self.location]-cam.x)*scale*cam.fov < -1200:
+        if ((platformpositions_x[self.location]-cam.x)*scale*cam.fov)+200 < -1200:
             if self.location + 7 <= (len(platformpositions_x)-1):
                 self.location = self.location + 7
+        if ((platformpositions_x[self.location]-cam.x)*scale*cam.fov)-200 > 1200:
+            if self.location - 7 >= 0:
+                self.location = self.location - 7
+
         if (platformpositions_x[self.location]-cam.x)*scale*cam.fov > -100 and (platformpositions_x[self.location]-cam.x)*scale*cam.fov < 100:
             global cp 
             cp = self.location
@@ -136,9 +143,9 @@ def generate(number, multiplier):
     y = 0
     for i in range(number):
         platformpositions_x.insert(i,x)
-        x = x + 110*multiplier + random.randint(30*multiplier,200*multiplier)
+        x = x + 110*multiplier + random.randint(int(30*multiplier),int(160*multiplier))
         platformpositions_y.insert(i,y)
-        y = y + random.randint(-60*multiplier,60*multiplier)
+        y = y + random.randint(int(-60*multiplier),int(60*multiplier))
     return platformpositions_x, platformpositions_y
 
 def game(number):
@@ -147,7 +154,7 @@ def game(number):
     global gen, p1, p2, p3, p4, p5, menu, jump, can_jump, camy_storage
     if gen == 1:
         global platformpositions, platformpositions_x, platformpositions_y
-        platformpositions = generate(number,2)
+        platformpositions = generate(number,2.3)
         print(platformpositions)
         platformpositions_x = platformpositions[0]
         platformpositions_y = platformpositions[1]
@@ -168,12 +175,12 @@ def game(number):
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
         player1.direction = -1
-        cam.x -= 5
+        cam.x -= 8
     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
         player1.direction = 1
-        cam.x += 5
-    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-        cam.y -= 2
+        cam.x += 8
+    if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and jump == 0:
+        cam.y -= 4
     if not keys[pygame.K_LEFT] and not keys[pygame.K_a] and not keys[pygame.K_RIGHT] and not keys[pygame.K_d]:
         player1.direction = 0
 
@@ -184,15 +191,18 @@ def game(number):
         camy_storage = cam.y
         player1.gravity = 0
     elif jump == 0:
-        if player1.gravity + 0.10 > 1:
+        if player1.gravity + 0.1 > 1:
             player1.gravity = 1
         else:
-            player1.gravity += 0.10
+            player1.gravity += 0.1
 
     if jump == 1:
-        cam.y += 5
-        if cam.y - camy_storage >= 300:
+        if cam.y - camy_storage >= 200 and cam.y - camy_storage < 300:
+            cam.y += 8
+        elif cam.y - camy_storage >= 300:
             jump = 0
+        else:
+            cam.y += 12
 
     #hitbox (collision check)
     player_world_x = cam.x + (player1.x / scale / cam.fov)
@@ -223,7 +233,7 @@ def game(number):
 
     #gravity
     if jump == 0:
-        cam.y -= 5*(player1.gravity*gravity)
+        cam.y -= 8*(player1.gravity*gravity)
     
     gravity = 1
     
@@ -231,7 +241,7 @@ def game(number):
     if keys[pygame.K_r]:
         gen = 1
     if keys[pygame.K_o]:
-        cam.y += 10
+        cam.y += 20
 
     #game display and update
     player1.update(0+(10*player1.direction),0,scale)

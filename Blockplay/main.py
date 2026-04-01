@@ -1,5 +1,9 @@
 import pygame
 import random
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+ASSETS = BASE_DIR / "textures"
 
 pygame.init()
 screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE)
@@ -19,8 +23,9 @@ def update():
     gui.update()
 
 
-button1 = gui.button('./Blockplay/textures/pixel-48x16.png',400,100)
-button2 = gui.button('./Blockplay/textures/pixel-48x16.png',400,100)
+button1 = gui.button(str(ASSETS / 'pixel-48x16.png'), 400, 100)
+button2 = gui.button(str(ASSETS / 'pixel-48x16.png'), 400, 100)
+logo = gui.picture(str(ASSETS / 'logo.png'))
 print("Hello World!")
 lock = 0
 
@@ -40,7 +45,7 @@ while running:
     if keys[pygame.K_b]:
         menu = 1
     if keys[pygame.K_c] and lock==0:
-        if es.color_scheme + 1 <= 4:
+        if es.color_scheme + 1 <= 5:
             es.color_scheme += 1
             lock = 1
         else:
@@ -57,8 +62,10 @@ while running:
         button1.text(0,-120,"Start")
         button2.show(0,-240,1)
         button2.text(0,-240,"Exit")
+        logo.show(25,320,0.5)
 
         if button1.click(0,-120,mouse.pressed(1)):
+            ingame.gen = 1
             menu = 2
         if button2.click(0,-240,mouse.pressed(1)):
             quit.quit_confirm = 1
