@@ -1,7 +1,9 @@
 import pygame
 import essentials as es
 import ingame
+from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parent
 buttonfont = pygame.font.SysFont(None, 64)
 
 def update():
@@ -32,10 +34,12 @@ def backround(width, height, tile_size, scale):
 
 class button:
     def __init__(self, texture_path, size_x, size_y):
-        self.path = texture_path
+        self.path = Path(texture_path)
+        if not self.path.is_absolute():
+            self.path = (BASE_DIR / self.path).resolve()
         self.sizex = size_x
         self.sizey = size_y
-        self.out_original = pygame.image.load(self.path).convert_alpha()
+        self.out_original = pygame.image.load(str(self.path)).convert_alpha()
         self.lscale = 1
         self.pos = (0, 0)
         self.font = pygame.font.SysFont(None, 64)
@@ -71,4 +75,19 @@ class button:
             return True
         else:
             return False
+        
+class picture:
+    def __init__(self, path):
+        self.path = Path(path)
+        if not self.path.is_absolute():
+            self.path = (BASE_DIR / self.path).resolve()
+        self.out_original = pygame.image.load(str(self.path)).convert_alpha()
+        self.sizex, self.sizey = self.out_original.get_size()
+
+    def show(self, x, y, lscale=1):
+        width = int(self.sizex * lscale)
+        height = int(self.sizey * lscale)
+        self.out = pygame.transform.scale(self.out_original, (width, height))
+        out_rect = self.out.get_rect(center=(midx + x, midy - y))
+        screen.blit(self.out, out_rect)
 #and self.hitbox(mouse.pos)
