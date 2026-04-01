@@ -7,6 +7,11 @@ A Python-based game powered by **Pygame**.
 **Current Version:** `0.0.4`
 
 ---
+## Currently planned
+* Adding the finish line
+* Adding a settings menu 
+* Creating a web version (with pygbag)
+
 ## How to Play
 
 | Action   | Keys                          |
