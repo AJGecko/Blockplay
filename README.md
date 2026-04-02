@@ -6,6 +6,10 @@ A Python-based game powered by **Pygame**.
 
 **Current Version:** `0.0.5`
 
+## About the Project
+
+I wanted to create a relaxed but fun game, bringing new life to an old idea from one of my Scratch projects and learning more about Pygame along the way.
+
 This project is inspired by one of my old scratch projects:
 [Blockplay 1.2 on Scratch](https://scratch.mit.edu/projects/967218273)
 
