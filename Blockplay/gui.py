@@ -124,7 +124,7 @@ class menu:
             else:
                 self.color = (0,0,255)
         def __call__(self):
-            return str((self.min,self.max,self.value,self.color))
+            return self.value
         def load(self,x,y,lscale,length):
             upper = self.max
             lower = self.min
@@ -203,7 +203,28 @@ class menu:
             pygame.draw.rect(screen,(150,150,150),(int((x+self.knobx-1)), int(y-(2*lscale)), int(14*lscale), int(14*lscale)))
 
     class dropdown:
-        pass
+        def __init__(self, options):
+            self.options = options
+            self.selected = self.options[0]
+            self.open = False
+        def __call__(self):
+            return self.options[self.selected]
+        def load(self,x,y,lscale):
+            lx = x
+            ly = y
+            if self.open:
+                counter = 0
+                for option in self.options:
+                    if counter % 2 == 1:
+                        color = (166, 115, 68)                    
+                    else:
+                        color = (133, 94, 58)
+
+                    pygame.draw.rect(screen, color, (lx+(20*counter),ly,100*lscale,20*lscale))
+            else:
+                pass
+
+
 
     def __init__(self,name):
         self.name = name
@@ -235,6 +256,11 @@ class menu:
                 given = di[key]
                 out = self.toggle(given)
                 self.built[key] = out.load
+            
+            if isinstance(di[key], list):
+                given = di[key]
+                out = self.dropdown(given)
+                self.built[key] = out.options
         
         print(self.built)
 
