@@ -1,4 +1,8 @@
 import pygame
+from pathlib import Path
+
+FONT_DIR = Path(__file__).resolve().parent / "assets/fonts"
+pixelfont_path = FONT_DIR / "grand9k_pixel.ttf"
 
 
 scale = 1
@@ -28,17 +32,21 @@ class mouse_():
         self.pos = (0,0)
         self.x = self.pos[0]
         self.y = self.pos[1]
+        self.button_down = False  # Speichert gedrückten Zustand
+
     def update(self):
         self.pos = pygame.mouse.get_pos()
         self.x = self.pos[0]
         self.y = self.pos[1]
-    def pressed(self,button):
-        if events and events.type == pygame.MOUSEBUTTONDOWN:
-            if events.button == 1:
-                return True
-        if events and events.type == pygame.MOUSEBUTTONUP:
-            if events.button == 1:
-                return False
+        global events
+        if events:
+            if events.type == pygame.MOUSEBUTTONDOWN and events.button == 1:
+                self.button_down = True
+            if events.type == pygame.MOUSEBUTTONUP and events.button == 1:
+                self.button_down = False
+
+    def pressed(self, button):
+        return self.button_down
 mouse = mouse_()
 
 def update():
