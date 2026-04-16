@@ -188,11 +188,16 @@ class menu:
 
 
             if self.condition == True:
-                self.knobx = 0 
+                self.knob_x = 0 
             elif self.condition == False:
-                self.knobx = 40
+                self.knob_x = 40
             else:
                 self.condition = self.default
+            
+            if self.knobx < self.knobx and self.knobx + 2 <= 40:
+                self.knob_x += 2
+            if self.knob_x > self.knobx and self.knobx - 2 >= 0:
+                self.knobx -= 2
 
             pygame.draw.rect(screen, (0,0,255), rect)
             pygame.draw.rect(screen,(150,150,150),(int((x+self.knobx-1)), int(y-(2*lscale)), int(14*lscale), int(14*lscale)))
