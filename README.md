@@ -3,12 +3,10 @@
 
 A Python-based game powered by **Pygame**.
 
-**Current Version:** `0.0.4`
+**Current Version:** `0.1.0`
 
 ---
-## Currently planned
-* Adding the finish line
-* Adding a settings menu 
+## Currently planned 
 * Creating a web version (with pygbag)
 
 ---
@@ -16,17 +14,17 @@ A Python-based game powered by **Pygame**.
 
 | Action   | Keys                          |
 | :------- | :---------------------------- |
-| **Move** | `W`, `A`, `S`, `D` or **Arrow Keys** |
+| **Move** | `W`, `A`, `S`, `D` or `Arrow Keys` |
 | **Jump** | `Space`, `W` or `Up Arrow`    |
-| **Fast Fall** | `S` or **Down Arrow** |
-> ⚠️ **Current Limitation:** There is no finish line in the current version. You can return to the main menu at any time by pressing **`B`**.
+| **Fast Fall** | `S` or `Down Arrow` |
+| **Pause** | `Escape` or `P`               |
 
 ---
 ## Requirements
 
 For the best experience and full compatibility, please ensure you are using the following versions or newer:
 
-* **Python:** `3.12.1`+
+* **Python:** `3.11.2`+
 * **Pygame:** `2.6.0`+
 
 ---
@@ -38,6 +36,8 @@ For the best experience and full compatibility, please ensure you are using the 
 2. **Install Dependencies:** Open your terminal and run the following command to install Pygame:
    ```bash
    pip install pygame
+   pip install pygame-markdown
+   ```
 
 3. **Run the Game:** Navigate to the project folder and start the game with:
    ```bash

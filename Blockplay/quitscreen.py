@@ -1,3 +1,5 @@
+#OLD QUITSCREEN, NOT IN USE ANYMORE
+"""
 import pygame
 from essentials import *
 
@@ -37,3 +39,4 @@ def quitscreen():
 def running_():
     global running
     return running
+"""
