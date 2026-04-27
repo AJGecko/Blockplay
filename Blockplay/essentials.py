@@ -17,7 +17,8 @@ settings = {
     "language": "en",
     "skin": "green",
     "color_scheme": 1,
-    "fly": False
+    "fly": False,
+    "volume": 35
 }
 
 current_skin = settings["skin"]

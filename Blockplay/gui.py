@@ -115,7 +115,8 @@ class picture:
 settingsbuild = {
     "title": "settings",
     "number_platforms": (10,300,es.settings["number_platforms"]),
-    "difficulty": ["normal","easy","hard"],
+    "volume": (0,100,es.settings["volume"]),
+    "difficulty": ["normal","easy"],
     "language": ["en","de","fr","es"],
     "skin": list(ingame.folder_names) if len(ingame.folder_names) > 0 else [es.settings["skin"]],
     "color_scheme": sorted(es.color_schemes.keys()),
@@ -267,9 +268,9 @@ class menu:
                 self.condition = self.default
             
             if self.knobx < self.knob_x:
-                self.knobx = min(self.knobx + 4 * self.speed, self.knob_x)
+                self.knobx = min(self.knobx + 8 * self.speed, self.knob_x)
             elif self.knobx > self.knob_x:
-                self.knobx = max(self.knobx - 4 * self.speed, self.knob_x)
+                self.knobx = max(self.knobx - 8 * self.speed, self.knob_x)
 
             max_knob = track_width - knob_size
             if max_knob <= 0:
@@ -540,7 +541,7 @@ class menu:
                     self.scroll_offset -= self.scroll_step
             self.scroll_offset = max(min_offset, min(max_offset, self.scroll_offset))
 
-        # Support holding the scroll buttons and arrow keys
+        # scrolling (buttons and arrow keys)
         current_time = pygame.time.get_ticks()
         if can_scroll and mouse.pressed(1) and (hover_up or hover_down):
             held_button = 'up' if hover_up else 'down'
@@ -629,9 +630,10 @@ settingsmenu.build(settingsbuild)
 
 
 md = MarkdownRenderer()
+current_info_file = None
 
 def info(mdfile_path):
-    global screen, width, height
+    global screen, width, height, current_info_file
 
     # Prüfen, ob die Datei existiert
     if not Path(mdfile_path).exists():
@@ -645,7 +647,7 @@ def info(mdfile_path):
         width, height = screen.get_size()
 
     screen.fill((10, 10, 10))
-    md.set_markdown(mdfile_path)
+
     font_scale = max(1.0, min(width, height) / 500)
     md.set_font_sizes(
         h1=int(32 * font_scale),
@@ -660,12 +662,12 @@ def info(mdfile_path):
     md.set_line_gaps(10, 40)
     md.set_area(screen, 0, 0, width=width, height=height)
 
-    # Disable scrolling for the info screen
-    md.draw_scrollbar = lambda: None
-    md.handle_mouse_input = lambda *args, **kwargs: None
-    md.pixel_first_showable = 0
+    if mdfile_path != current_info_file:
+        md.set_markdown(mdfile_path)
+        md.pixel_first_showable = 0
+        current_info_file = mdfile_path
 
-    info_events = pygame.event.get()
+    info_events = es.events_list if hasattr(es, 'events_list') else []
     mouse_x, mouse_y = pygame.mouse.get_pos()
     mouse_pressed = pygame.mouse.get_pressed()
 

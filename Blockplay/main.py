@@ -8,6 +8,10 @@ ASSETS = BASE_DIR / "assets"
 INFO_DIR = BASE_DIR / "info"
 
 pygame.init()
+try:
+    pygame.mixer.init()
+except Exception as e:
+    print("Mixer init failed:", e)
 screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE)
 pygame.display.set_caption("Blockplay")
 clock = pygame.time.Clock()
@@ -43,6 +47,44 @@ print("Hello World!")
 lock = 0
 pause_lock = 0
 confirm_exit = False
+
+MENU_MUSIC_FILE = ASSETS / 'music' / 'viacheslavstarostin-game-gaming-video-game-music-471936.mp3'
+OTHER_MENU_MUSIC_FILE = ASSETS / 'music' / 'viacheslavstarostin-gaming-game-video-game-music-474517.mp3'
+menu_music_playing = False
+active_music_file = None
+
+
+def get_menu_volume():
+    return max(0.0, min(1.0, es.settings.get("volume", 35) / 100.0))
+
+
+def update_menu_music():
+    global menu_music_playing, active_music_file
+    desired_music = None
+
+    if currentmenu in (1, 3, 7):
+        desired_music = MENU_MUSIC_FILE
+    elif currentmenu in (2, 4, 6):
+        desired_music = OTHER_MENU_MUSIC_FILE
+
+    if desired_music is not None:
+        if not menu_music_playing or active_music_file != desired_music:
+            try:
+                pygame.mixer.music.load(str(desired_music))
+                pygame.mixer.music.play(-1)
+                active_music_file = desired_music
+                menu_music_playing = True
+            except Exception as e:
+                print("Menu music load failed:", e)
+                menu_music_playing = False
+                active_music_file = None
+        if menu_music_playing:
+            pygame.mixer.music.set_volume(get_menu_volume())
+    else:
+        if menu_music_playing:
+            pygame.mixer.music.stop()
+            menu_music_playing = False
+            active_music_file = None
 
 
 def draw_center_title(key):
@@ -196,8 +238,9 @@ while running:
         if not info_file.exists():
             info_file = INFO_DIR / "info-en.md"
         gui.info(str(info_file))
-        button_menu.show(0,-400,1)
-        if button_menu.click(0,-400,mouse.pressed(1)):
+        button_y = -midy + 70
+        button_menu.show(0, button_y, 1)
+        if button_menu.click(0, button_y, mouse.pressed(1)):
             mouse.button_down = False
             currentmenu = 1
 
@@ -206,7 +249,7 @@ while running:
     #text_surface = font.render(str(ingame.timer(True)), True, (255, 255, 255))
     #screen.blit(text_surface, (100, 100))
 
-
+    update_menu_music()
 
     pygame.display.flip()
     clock.tick(60)

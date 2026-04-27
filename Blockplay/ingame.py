@@ -47,6 +47,8 @@ start_time = None
 elapsed_time = 0.0
 timer_on = False
 finishtime = None
+mouse_x = 0
+mouse_y = 0
 
 class camera:
     def __init__(self):
@@ -230,13 +232,13 @@ def generate(number, multiplier):
 def game(number):
     global midx,midy,width,height,events,scale,font,platform_texture,gravity,last_collision_index,timer_on,finishtime
     midx,midy,width,height,events,scale = es.basis()
-    global gen, p1, p2, p3, p4, p5, menu, jump, can_jump, camy_storage
+    global gen, p1, p2, p3, p4, p5, menu, jump, can_jump, camy_storage, mouse_x, mouse_y
 
     if es.settings["skin"] in folder_names:
         player1.skin = es.settings["skin"]
 
     if gen == 1:
-        global platformpositions, platformpositions_x, platformpositions_y, timer_on
+        global platformpositions, platformpositions_x, platformpositions_y
         platformpositions = generate(number,2.3)
         print(platformpositions)
         platformpositions_x = platformpositions[0]
@@ -270,8 +272,22 @@ def game(number):
     if not keys[pygame.K_LEFT] and not keys[pygame.K_a] and not keys[pygame.K_RIGHT] and not keys[pygame.K_d]:
         player1.direction = 0
 
+    #mouse steering
+    if es.mouse.pressed(1):
+        mouse_x, mouse_y = es.mouse.pos
+        if mouse_x < midx - 100*scale:
+            player1.direction = -1
+            cam.x -= 8
+        elif mouse_x > midx + 100*scale:
+            if not timer_on:
+                timer_on = True
+            player1.direction = 1
+            cam.x += 8
+        else:
+            player1.direction = 0
+
     #jump
-    if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]) and can_jump == 1:
+    if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE] or (mouse_y < midy - 100*scale and es.mouse.pressed(1))) and can_jump == 1:
         jump = 1
         can_jump = 0
         camy_storage = cam.y
