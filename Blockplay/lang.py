@@ -29,6 +29,8 @@ def updatelang():
                 "pause": "Pause",
             #win/lose screen:
                 "your_time": "Your Time",
+                "highscore": "Highscore",
+                "new_highscore": "New Highscore!",
                 "game_over": "Game Over",
                 "you_won": "You Won",
             #Settings menu:
@@ -86,6 +88,8 @@ def updatelang():
                 "pause": "Pause",
             #win/lose screen:
                 "your_time": "Deine Zeit",
+                "highscore": "Highscore",
+                "new_highscore": "Neuer Highscore!",
                 "game_over": "Game Over",
                 "you_won": "Gewonnen!",
             #Settings menu:
@@ -142,6 +146,8 @@ def updatelang():
                 "pause": "Pause",
             #win/lose screen:
                 "your_time": "Votre temps",
+                "highscore": "Meilleur score",
+                "new_highscore": "Nouveau record !",
                 "game_over": "Game Over",
                 "you_won": "You Won!",
             #Settings menu:
@@ -198,6 +204,8 @@ def updatelang():
                 "pause": "Pausa",
             #win/lose screen:
                 "your_time": "Tu tiempo",
+                "highscore": "Puntuación más alta",
+                "new_highscore": "¡Nuevo récord!",
                 "game_over": "Game Over",
                 "you_won": "¡Ganaste!",
             #Settings menu:

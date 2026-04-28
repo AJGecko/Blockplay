@@ -6,15 +6,21 @@ import random
 import math
 from pathlib import Path
 
+#set assets path
 BASE_DIR = Path(__file__).resolve().parent
 ASSETS = BASE_DIR / "assets"
 
+#basis variables
 midx,midy,width,height,events,scale = es.basis()
 screen = pygame.display.get_surface()
 font = pygame.font.SysFont(None, 32)
 timerfont = pygame.font.SysFont(None, 86)
 platform_texture = pygame.image.load(str(ASSETS / 'platform.png')).convert_alpha()
+pause_button_texture = pygame.image.load(str(ASSETS / 'button.png')).convert_alpha()
+highscore = None
+new_highscore = False
 
+#load player textures
 player_dir = ASSETS / 'player'
 player_entries = player_dir.iterdir()
 folders = []
@@ -34,8 +40,7 @@ for p in folder_names:
         out.append(pygame.image.load(str(png_file)).convert_alpha())
     player_texture.append(out)
 
-print(player_texture)
-
+#global variables
 gen = 1
 jump = 0
 can_jump = 0
@@ -50,12 +55,14 @@ finishtime = None
 mouse_x = 0
 mouse_y = 0
 
+#camera class
 class camera:
     def __init__(self):
         self.x = 0
         self.y = 0
         self.fov = 1
 
+#player class
 class player:
     def __init__(self, id, skin):
         self.x = 0 
@@ -95,6 +102,7 @@ class player:
         self.pos = (self.x,self.y)
         self.lscale = lscale 
 
+#platform class
 class platform:
     def __init__(self):
         self.x = 0
@@ -132,6 +140,7 @@ class platform:
             global cp 
             cp = self.location
 
+#finish line class
 class finish:
     def __init__(self):
         self.columns = 4
@@ -183,6 +192,7 @@ class finish:
                 cell_x = left_x + col * cell_size
                 pygame.draw.rect(screen, color, (cell_x, row_y, cell_size, cell_size))
 
+#timer function
 def timer(on):
     global start_time, elapsed_time
     if on is False:
@@ -200,9 +210,53 @@ def timer(on):
         return round(elapsed_time + (time_module.time() - start_time), 2)
     return round(elapsed_time, 2)
 
+#highscore functions
+def load_highscore():
+    global highscore
+    highscore = None
+
+
+def save_highscore(value):
+    global highscore
+    highscore = float(value)
+
+
+def check_highscore(value):
+    global new_highscore
+    if value is None:
+        return False
+    if highscore is None or value < highscore:
+        save_highscore(value)
+        new_highscore = True
+        return True
+    new_highscore = False
+    return False
+
+
 time = timer(timer_on)
 
+#pause button
+pause_button_rect = None
+def draw_pause_button():
+    global pause_button_rect
+    button_size = 80
+    button_x = 100
+    button_y = 80
+    pause_button_rect = pygame.Rect(button_x, button_y, button_size, button_size)
 
+    button_image = pygame.transform.smoothscale(pause_button_texture, (button_size, button_size))
+    screen.blit(button_image, pause_button_rect.topleft)
+
+    icon_width = 16
+    icon_height = 40
+    icon_x = button_x + (button_size - icon_width*2 - 12) // 2
+    icon_y = button_y + (button_size - icon_height) // 2
+    pygame.draw.rect(screen, (240, 240, 240), (icon_x, icon_y, icon_width, icon_height), border_radius=4)
+    pygame.draw.rect(screen, (240, 240, 240), (icon_x + icon_width + 12, icon_y, icon_width, icon_height), border_radius=4)
+
+    return pause_button_rect
+
+#objects
 cam = camera()
 player1 = player(1,"green")
 p1 = platform()
@@ -214,9 +268,11 @@ p6 = platform()
 p7 = platform()
 finish1 = finish()
 
+#draws the ingame backround
 def backround():
     pygame.draw.rect(screen, (38, 171, 212), (0, 0, width, height), 0)
 
+#generates the level by creating the platform positions
 def generate(number, multiplier):
     platformpositions_x = []
     platformpositions_y = []
@@ -229,34 +285,38 @@ def generate(number, multiplier):
         y = y + random.randint(int(-60*multiplier),int(60*multiplier))
     return platformpositions_x, platformpositions_y
 
+#runs the game
 def game(number):
+    #global variables
     global midx,midy,width,height,events,scale,font,platform_texture,gravity,last_collision_index,timer_on,finishtime
     midx,midy,width,height,events,scale = es.basis()
     global gen, p1, p2, p3, p4, p5, menu, jump, can_jump, camy_storage, mouse_x, mouse_y
 
+    #set player skin
     if es.settings["skin"] in folder_names:
         player1.skin = es.settings["skin"]
 
+    #setup for the round
     if gen == 1:
-        global platformpositions, platformpositions_x, platformpositions_y
-        platformpositions = generate(number,2.3)
-        print(platformpositions)
-        platformpositions_x = platformpositions[0]
-        platformpositions_y = platformpositions[1]
-        cam.x = 0
-        cam.y = 400
-        p1.location = 0
-        p2.location = 1
-        p3.location = 2
-        p4.location = 3
-        p5.location = 4
-        p6.location = 5
-        p7.location = 6
-        timer_on = False
-        gen = 0
-        jump = 0
-        can_jump = 0
-    
+            global platformpositions, platformpositions_x, platformpositions_y, new_highscore
+            platformpositions = generate(number,2.3)
+            print(platformpositions)
+            platformpositions_x = platformpositions[0]
+            platformpositions_y = platformpositions[1]
+            cam.x = 0
+            cam.y = 400
+            p1.location = 0
+            p2.location = 1
+            p3.location = 2
+            p4.location = 3
+            p5.location = 4
+            p6.location = 5
+            p7.location = 6
+            timer_on = False
+            gen = 0
+            jump = 0
+            can_jump = 0
+            new_highscore = False
     #steering
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
@@ -285,6 +345,8 @@ def game(number):
             cam.x += 8
         else:
             player1.direction = 0
+        if mouse_y > midy + 100*scale and jump == 0:
+            cam.y -= 4
 
     #jump
     if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE] or (mouse_y < midy - 100*scale and es.mouse.pressed(1))) and can_jump == 1:
@@ -306,9 +368,10 @@ def game(number):
         else:
             cam.y += 10
 
+    #timer
     time = timer(timer_on)
     
-
+    #finish line position
     finish_world_x = platformpositions_x[-1] + 600
 
     #hitbox (collision check)
@@ -327,6 +390,8 @@ def game(number):
         return "won"
 
 
+    difficulty = es.settings.get("difficulty", "normal")
+
     for i in range(number):
         platform_rect = pygame.Rect(
             int(platformpositions_x[i] - 200 / 2),
@@ -335,6 +400,12 @@ def game(number):
             400,
         )
         if player_rect.colliderect(platform_rect):
+            if difficulty == "easy":
+                cam.y = (player1.sizey / 2 + platform_rect.height / 2) - platformpositions_y[i] - 1
+                gravity = 0
+                can_jump = 1
+                break
+
             landing_overlap = player_rect.bottom - platform_rect.top
             if -30 <= landing_overlap <= 40:
                 min_overlap = min(player_rect.right, platform_rect.right) - max(player_rect.left, platform_rect.left)
@@ -392,12 +463,9 @@ def game(number):
     p7.updateauto()
     p7.show()
     finish1.show(finish_world_x, 0, scale)
+    pause_button_rect = draw_pause_button()
     text_surface = timerfont.render(str(time), True, (255, 255, 255))
     screen.blit(text_surface, (width - 200, 100))
 
-    #debug
-    text_surface = font.render(str(jump), True, (255, 255, 255))
-    #screen.blit(text_surface, (700, 100))
-    text_surface = font.render(str(platformpositions_x[p2.location]-cam.x) + " , " + str(cam.x), True, (255, 255, 255))
-    #screen.blit(text_surface, (100, 100))
+    #return status
     return "playing"

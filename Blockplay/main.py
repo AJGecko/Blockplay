@@ -1,12 +1,22 @@
+# /// script
+# dependencies = [
+#  "pygame-ce",
+#  "pygame_markdown",
+# ]
+# ///
+#go
+
 import pygame
 import sys
 from pathlib import Path
 import asyncio
 
+#set assets path
 BASE_DIR = Path(__file__).resolve().parent
 ASSETS = BASE_DIR / "assets"
 INFO_DIR = BASE_DIR / "info"
 
+#init pygame and create window
 pygame.init()
 try:
     pygame.mixer.init()
@@ -16,23 +26,28 @@ screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE)
 pygame.display.set_caption("Blockplay")
 clock = pygame.time.Clock()
 
+#import other files
 import ingame
 import essentials as es
 import gui
 import lang
 lang.updatelang()
 
+#set font
 font = pygame.font.SysFont(None, 86)
 titlefont = pygame.font.SysFont(None, 128)
 
+#main loop variables
 running = True
 currentmenu = 1
+midx = midy = width = height = scale = 0
 
+#update function to update essentials and gui
 def update():
     es.update()
     gui.update()
 
-
+#create buttons and logo
 button1 = gui.button(str(ASSETS / 'button.png'), 400, 100, "start")
 button4 = gui.button(str(ASSETS / 'button.png'), 400, 100, "info")
 button3 = gui.button(str(ASSETS / 'button.png'), 400, 100, "settings")
@@ -46,17 +61,18 @@ logo = gui.picture(str(ASSETS / 'logo.png'))
 print("Hello World!")
 lock = 0
 pause_lock = 0
+pause_button_lock = 0
 confirm_exit = False
 
-MENU_MUSIC_FILE = ASSETS / 'music' / 'viacheslavstarostin-game-gaming-video-game-music-471936.mp3'
-OTHER_MENU_MUSIC_FILE = ASSETS / 'music' / 'viacheslavstarostin-gaming-game-video-game-music-474517.mp3'
+#load music
+MENU_MUSIC_FILE = ASSETS / 'music' / 'viacheslavstarostin-game-gaming-video-game-music-471936.ogg'
+OTHER_MENU_MUSIC_FILE = ASSETS / 'music' / 'viacheslavstarostin-gaming-game-video-game-music-474517.ogg'
 menu_music_playing = False
 active_music_file = None
 
-
+#music functions
 def get_menu_volume():
     return max(0.0, min(1.0, es.settings.get("volume", 35) / 100.0))
-
 
 def update_menu_music():
     global menu_music_playing, active_music_file
@@ -86,179 +102,227 @@ def update_menu_music():
             menu_music_playing = False
             active_music_file = None
 
-
+#draw center title function for pause, win and lose screens
 def draw_center_title(key):
     text = lang.currentlang.get(key, key)
     output = titlefont.render(text, True, (255, 255, 255))
     text_rect = output.get_rect(center=(midx, midy - 180 * scale))
     screen.blit(output, text_rect)
 
-while running:
-    update()
-    midx,midy,width,height,events,scale = es.basis()
-    mouse = es.mouse
 
-    keys = pygame.key.get_pressed()
-    
-    if events and events.type == pygame.QUIT:
-        running = False
-    if keys[pygame.K_l]:
-        es.scale = 2
-    else:
-        es.scale = 1
-    
+async def main():
+    global running, currentmenu, midx, midy, width, height, scale, pause_lock, pause_button_lock, confirm_exit, screen
+    while running:
+        #update essentials and gui
+        update()
 
-    pause_pressed = keys[pygame.K_ESCAPE] or keys[pygame.K_p]
-    if pause_pressed and pause_lock == 0:
+        #get basic variables
+        midx,midy,width,height,events,scale = es.basis()
+        mouse = es.mouse
+        keys = pygame.key.get_pressed()
+        
+        #handle events
+        if events and events.type == pygame.QUIT:
+            running = False
+
+        
+        #pause menu toggle
+        pause_pressed = keys[pygame.K_ESCAPE] or keys[pygame.K_p]
+        if pause_pressed and pause_lock == 0:
+            if currentmenu == 2:
+                ingame.timer("pause")
+                currentmenu = 4
+                ingame.timer_on = "pause"
+            elif currentmenu == 4:
+                ingame.timer_on = True
+                currentmenu = 2
+            pause_lock = 1
+        if not pause_pressed:
+            pause_lock = 0
+
+        #main menu
+        if currentmenu == 1:
+
+            #background display
+            gui.backround(width,height,120,scale)
+
+            #button display
+            button1.show(0,0,1)
+            button4.show(0,-120,1)
+            button3.show(0,-240,1)
+            button2.show(0,-360,1)
+
+            #logo display
+            logo.show(25,320,0.5)
+
+            #highscore display
+            highscore_label = lang.currentlang.get("highscore", "Highscore")
+            highscore_value = "--" if ingame.highscore is None else f"{ingame.highscore:.2f}"
+            highscore_surface = font.render(f"{highscore_label}: {highscore_value}", True, (255, 255, 255))
+            highscore_rect = highscore_surface.get_rect(center=(midx, midy - 120 * scale))
+            screen.blit(highscore_surface, highscore_rect)
+
+            #button interactions
+            if button1.click(0,0,mouse.pressed(1)):
+                ingame.gen = 1
+                ingame.timer_on = False
+                currentmenu = 2
+            if button2.click(0,-360,mouse.pressed(1)):
+                confirm_exit = True
+                mouse.button_down = False
+            if button3.click(0,-240,mouse.pressed(1)):
+                mouse.button_down = False
+                currentmenu = 3
+            if button4.click(0,-120,mouse.pressed(1)):
+                mouse.button_down = False
+                currentmenu = 7
+
+            if confirm_exit:
+                button_yes.show(-310, -360, 1)
+                button_no.show(310, -360, 1)
+
+                if button_yes.click(-310, -360, mouse.pressed(1)):
+                    running = False
+                elif button_no.click(310, -360, mouse.pressed(1)):
+                    confirm_exit = False
+                    mouse.button_down = False
+                elif mouse.pressed(1):
+                    confirm_exit = False
+                    mouse.button_down = False
+              
+        #ingame
         if currentmenu == 2:
-            ingame.timer("pause")
-            currentmenu = 4
-            ingame.timer_on = "pause"
-        elif currentmenu == 4:
-            ingame.timer_on = True
-            currentmenu = 2
-        pause_lock = 1
-    if not pause_pressed:
-        pause_lock = 0
+            #draw background
+            ingame.backround()
 
-    if keys[pygame.K_h]:
-        currentmenu = 7
+            #run game and get state
+            game_state = ingame.game(es.settings["number_platforms"])
 
+            #pause functionality
+            if ingame.pause_button_rect is not None and mouse.pressed(1) and pause_button_lock == 0:
+                if ingame.pause_button_rect.collidepoint(mouse.pos):
+                    ingame.timer("pause")
+                    ingame.timer_on = "pause"
+                    currentmenu = 4
+                    pause_button_lock = 1
+            if not mouse.pressed(1):
+                pause_button_lock = 0
+            
+            #check game state for win/lose
+            if game_state == "dead":
+                currentmenu = 5
+            elif game_state == "won":
+                ingame.check_highscore(ingame.finishtime)
+                currentmenu = 6
 
-    if currentmenu == 1:
+        #settings menu
+        if currentmenu == 3:
+            #show settings menu
+            gui.settingsmenu.show()
 
-        gui.backround(width,height,120,scale)
-        button1.show(0,0,1)
-        button4.show(0,-120,1)
-        button3.show(0,-240,1)
-        button2.show(0,-360,1)
-        logo.show(25,320,0.5)
-
-        if button1.click(0,0,mouse.pressed(1)):
-            ingame.gen = 1
-            ingame.timer_on = False
-            currentmenu = 2
-        if button2.click(0,-360,mouse.pressed(1)):
-            confirm_exit = True
-            mouse.button_down = False
-        if button3.click(0,-240,mouse.pressed(1)):
-            mouse.button_down = False
-            currentmenu = 3
-        if button4.click(0,-120,mouse.pressed(1)):
-            mouse.button_down = False
-            currentmenu = 7
-
-        if confirm_exit:
-            button_yes.show(-310, -360, 1)
-            button_no.show(310, -360, 1)
-
-            if button_yes.click(-310, -360, mouse.pressed(1)):
-                running = False
-            elif button_no.click(310, -360, mouse.pressed(1)):
-                confirm_exit = False
+            #main menu button in settings menu
+            button_menu.show(0,-400,1)
+            if button_menu.click(0,-400,mouse.pressed(1)):
                 mouse.button_down = False
-            elif mouse.pressed(1):
-                confirm_exit = False
+                currentmenu = 1
+
+        #pause menu
+        if currentmenu == 4:
+            #draw pause menu (background, title and buttons)
+            gui.backround(width,height,120,scale)
+            draw_center_title("pause")
+            button_resume.show(0,-120,1)
+            button_restart.show(0,-240,1)
+            button_menu.show(0,-360,1)
+            
+            #button interactions
+            if button_resume.click(0,-120,mouse.pressed(1)):
+                ingame.timer_on = True
+                currentmenu = 2
                 mouse.button_down = False
-            
-            
-            
+            if button_restart.click(0,-240,mouse.pressed(1)):
+                ingame.gen = 1
+                ingame.timer_on = False
+                mouse.button_down = False
+                currentmenu = 2
+            if button_menu.click(0,-360,mouse.pressed(1)):
+                ingame.gen = 1
+                ingame.timer_on = False
+                mouse.button_down = False
+                currentmenu = 1
 
-    if currentmenu == 2:
-        ingame.backround()
-        game_state = ingame.game(es.settings["number_platforms"])
-        if game_state == "dead":
-            currentmenu = 5
-        elif game_state == "won":
-            currentmenu = 6
+        #game over screen
+        if currentmenu == 5:
+            #draw game over screen (background, title and buttons)
+            gui.backround(width,height,120,scale)
+            draw_center_title("game_over")
+            button_restart.show(0,-180,1)
+            button_menu.show(0,-300,1)
 
-    if currentmenu == 3:
-        gui.settingsmenu.show()
-        button_menu.show(0,-400,1)
-        if button_menu.click(0,-400,mouse.pressed(1)):
-            mouse.button_down = False
-            currentmenu = 1
+            #button interactions
+            if button_restart.click(0,-180,mouse.pressed(1)):
+                ingame.gen = 1
+                mouse.button_down = False
+                currentmenu = 2
+            if button_menu.click(0,-300,mouse.pressed(1)):
+                mouse.button_down = False
+                currentmenu = 1
 
-    if currentmenu == 4:
-        gui.backround(width,height,120,scale)
-        draw_center_title("pause")
-        button_resume.show(0,-120,1)
-        button_restart.show(0,-240,1)
-        button_menu.show(0,-360,1)
+        #win screen
+        if currentmenu == 6:
+            #draw win screen (background, title, time, highscore and buttons)
+            gui.backround(width,height,120,scale)
+            draw_center_title("you_won")
+            your_time_text = lang.currentlang.get("your_time", "Your Time") + ": " + str(ingame.finishtime)
+            text_surface = font.render(your_time_text, True, (255, 255, 255))
+            text_rect = text_surface.get_rect(center=(midx, midy - 60 * scale))
+            screen.blit(text_surface, text_rect)
 
-        if button_resume.click(0,-120,mouse.pressed(1)):
-            ingame.timer_on = True
-            currentmenu = 2
-            mouse.button_down = False
-        if button_restart.click(0,-240,mouse.pressed(1)):
-            ingame.gen = 1
-            ingame.timer_on = False
-            mouse.button_down = False
-            currentmenu = 2
-        if button_menu.click(0,-360,mouse.pressed(1)):
-            ingame.gen = 1
-            ingame.timer_on = False
-            mouse.button_down = False
-            currentmenu = 1
+            button_restart.show(0,-180,1)
+            button_menu.show(0,-300,1)
 
-    if currentmenu == 5:
-        gui.backround(width,height,120,scale)
-        draw_center_title("game_over")
-        button_restart.show(0,-180,1)
-        button_menu.show(0,-300,1)
+            #new highscore display
+            if ingame.new_highscore:
+                if (pygame.time.get_ticks() // 500) % 2 == 0:
+                    new_text = lang.currentlang.get("new_highscore", "New Highscore!")
+                    new_surface = font.render(new_text, True, (255, 255, 0))
+                    new_rect = new_surface.get_rect(center=(midx, midy + 20 * scale))
+                    screen.blit(new_surface, new_rect)
 
-        if button_restart.click(0,-180,mouse.pressed(1)):
-            ingame.gen = 1
-            mouse.button_down = False
-            currentmenu = 2
-        if button_menu.click(0,-300,mouse.pressed(1)):
-            mouse.button_down = False
-            currentmenu = 1
+            #button interactions
+            if button_restart.click(0,-180,mouse.pressed(1)):
+                ingame.gen = 1
+                mouse.button_down = False
+                currentmenu = 2
+            if button_menu.click(0,-300,mouse.pressed(1)):
+                mouse.button_down = False
+                currentmenu = 1
 
-    if currentmenu == 6:
-        gui.backround(width,height,120,scale)
-        draw_center_title("you_won")
-        your_time_text = lang.currentlang.get("your_time", "Your Time") + ": " + str(ingame.finishtime)
-        text_surface = font.render(your_time_text, True, (255, 255, 255))
-        text_rect = text_surface.get_rect(center=(midx, midy - 60 * scale))
-        screen.blit(text_surface, text_rect)
-        button_restart.show(0,-180,1)
-        button_menu.show(0,-300,1)
+        #info screen (loads markdown file)
+        if currentmenu == 7:
+            #load info file based on current language, default to english if not found
+            info_file = INFO_DIR / f"info-{lang.getlang()}.md"
+            if not info_file.exists():
+                info_file = INFO_DIR / "info-en.md"
+            gui.info(str(info_file))
+            button_y = -midy + 70
 
-        if button_restart.click(0,-180,mouse.pressed(1)):
-            ingame.gen = 1
-            mouse.button_down = False
-            currentmenu = 2
-        if button_menu.click(0,-300,mouse.pressed(1)):
-            mouse.button_down = False
-            currentmenu = 1
+            #main menu button in info menu
+            button_menu.show(0, button_y, 1)
+            if button_menu.click(0, button_y, mouse.pressed(1)):
+                mouse.button_down = False
+                currentmenu = 1
 
-    if currentmenu == 7:
-        info_file = INFO_DIR / f"info-{lang.getlang()}.md"
-        if not info_file.exists():
-            info_file = INFO_DIR / "info-en.md"
-        gui.info(str(info_file))
-        button_y = -midy + 70
-        button_menu.show(0, button_y, 1)
-        if button_menu.click(0, button_y, mouse.pressed(1)):
-            mouse.button_down = False
-            currentmenu = 1
+        update_menu_music()
 
-    #text_surface = font.render(str(mouse.pressed(1)), True, (255, 255, 255))
-    #screen.blit(text_surface, (700, 100))
-    #text_surface = font.render(str(ingame.timer(True)), True, (255, 255, 255))
-    #screen.blit(text_surface, (100, 100))
+        pygame.display.flip()
+        clock.tick(60)
+        await asyncio.sleep(0)
 
-    update_menu_music()
-
-    pygame.display.flip()
-    clock.tick(60)
-    
-#6e4d32
-    
-sys.exit()
+    sys.exit()
 
 
+if __name__ == '__main__':
+    asyncio.run(main())
 
-#asyncio def main():
-pass
+
