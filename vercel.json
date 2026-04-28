@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/cdn/:path*",
+      "destination": "https://pygame-web.github.io/cdn/:path*"
+    }
+  ]
+}
