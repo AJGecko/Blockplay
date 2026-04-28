@@ -1,81 +1,118 @@
 import pygame
+from pathlib import Path
 
+#set assets paths
+FONT_DIR = Path(__file__).resolve().parent / "assets/fonts"
+pixelfont_path = FONT_DIR / "grand9k_pixel.ttf"
 
+#global variables
 scale = 1
 width = 0
 height = 0
 events = None
+events_list = []
 
-curret_skin = "green"
+#settings
+settings = {
+    "number_platforms": 30,
+    "difficulty": "normal",
+    "language": "en",
+    "skin": "green",
+    "color_scheme": 1,
+    "fly": False,
+    "volume": 35
+}
+
+#appearance configuration
+current_skin = settings["skin"]
 color_scheme = 1
-color_schemes = [
-    ((151, 212, 38), (167, 233, 43)),
-    ((120, 180, 30), (140, 200, 35)),
-    ((45, 130, 200), (60, 150, 220)),
-    ((180, 50, 50), (205, 70, 70)),
-    ((135, 75, 205), (155, 95, 225)),
-]
+color_schemes = {
+    1: ((151, 212, 38), (167, 233, 43)),
+    2: ((120, 180, 30), (140, 200, 35)),
+    3: ((45, 130, 200), (60, 150, 220)),
+    4: ((180, 50, 50), (205, 70, 70)),
+    5: ((135, 75, 205), (155, 95, 225)),
+}
 
+#returns the current color scheme or skin based on the mode
 def appearance(mode):
-    global color_scheme, curret_skin
+    global color_scheme, current_skin
     if mode == "color":
-        return color_schemes[color_scheme-1] 
+        return color_schemes.get(color_scheme, color_schemes[1])
     if mode == "skin":
-        return curret_skin
+        return current_skin
 
+#mouse class
 class mouse_():
+    #init mouse position and button state
     def __init__(self):
         self.pos = (0,0)
         self.x = self.pos[0]
         self.y = self.pos[1]
-    def update(self):
-        self.pos = pygame.mouse.get_pos()
-        self.x = self.pos[0]
-        self.y = self.pos[1]
-    def pressed(self,button):
-        if events and events.type == pygame.MOUSEBUTTONDOWN:
-            if events.button == 1:
-                return True
-        if events and events.type == pygame.MOUSEBUTTONUP:
-            if events.button == 1:
-                return False
+        self.button_down = False
+
+    #update mouse position and button state based on events
+    def update(self, event=None):
+        if event is None:
+            self.pos = pygame.mouse.get_pos()
+        else:
+            if event.type == pygame.MOUSEMOTION:
+                self.pos = event.pos
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                self.pos = event.pos
+                self.button_down = True
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                self.pos = event.pos
+                self.button_down = False
+            elif event.type == pygame.FINGERDOWN:
+                self.pos = (int(event.x * width), int(event.y * height))
+                self.button_down = True
+            elif event.type == pygame.FINGERUP:
+                self.pos = (int(event.x * width), int(event.y * height))
+                self.button_down = False
+            elif event.type == pygame.FINGERMOTION:
+                self.pos = (int(event.x * width), int(event.y * height))
+        self.x, self.y = self.pos
+
+    #returns if a button is currently pressed
+    def pressed(self, button):
+        return self.button_down
+    
+#create mouse instance
 mouse = mouse_()
 
+#update function to update global variables and mouse state
 def update():
     screen = pygame.display.get_surface()
-    global width,height,events,scale
+    global width,height,events,scale,current_skin,color_scheme,events_list
+    events_list = []
+    color_scheme = settings["color_scheme"]
+    current_skin = settings["skin"]
     width,height=screen.get_size()
-    mouse.update()
     for event in pygame.event.get():
+        events_list.append(event)
         events = event
+        mouse.update(event)
 
+#set midx and midy first to avoid errors
 midx = 0
 midy = 0
+
+#update midx and midy (the middle of the screen)
 def mid():
     global midx, midy
     midx = width / 2
     midy = height / 2
 
+#return the basis variables for the game
 def basis():
     mid()
     return midx,midy,width,height,events,scale
 
+#check for collision between two rectangles
 def collision(one, two):
     if isinstance(one, tuple):
         one = pygame.Rect(*one)
     if isinstance(two, tuple):
         two = pygame.Rect(*two)
     return one.colliderect(two) 
-    pass
-
-"""
-def aabb_collision(rect1, rect2):
-    AABB (Axis-Aligned Bounding Box) collision detection.
-    rect1, rect2: pygame.Rect objects or (x, y, width, height) tuples
-    Returns: True if rectangles overlap, False otherwise
-    if isinstance(rect1, tuple):
-        rect1 = pygame.Rect(*rect1)
-    if isinstance(rect2, tuple):
-        rect2 = pygame.Rect(*rect2)
-    return rect1.colliderect(rect2)
-"""
