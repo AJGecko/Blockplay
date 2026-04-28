@@ -684,7 +684,7 @@ def info(mdfile_path):
 
     screen.fill((10, 10, 10))
 
-    font_scale = max(1.0, min(width, height) / 500)
+    font_scale = max(1.0, min(width, height) / 550)
     md.set_font_sizes(
         h1=int(32 * font_scale),
         h2=int(28 * font_scale),
