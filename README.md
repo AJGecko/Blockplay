@@ -1,5 +1,5 @@
-# Blockplay - WIP (Expirental)
-> **Note:** This branch represents the current state of the **Codespace**. It contains experimental features, unfinished code, and may be unstable.
+# Blockplay - WIP
+> **Note:** This version is a Work In Progress and does not represent the final product.
 
 A Python-based game powered by **Pygame**.
 
