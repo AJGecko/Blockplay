@@ -13,6 +13,10 @@ import asyncio
 
 #set assets path
 BASE_DIR = Path(__file__).resolve().parent
+LIB_DIR = BASE_DIR / "lib"
+if str(LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(LIB_DIR))
+
 ASSETS = BASE_DIR / "assets"
 INFO_DIR = BASE_DIR / "info"
 
@@ -324,5 +328,3 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-
-
