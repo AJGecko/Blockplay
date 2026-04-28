@@ -5,12 +5,13 @@ import essentials as es
 import ingame
 from pathlib import Path
 
-
+#set assets path
 BASE_DIR = Path(__file__).resolve().parent
 pixelfont_path = es.pixelfont_path
 buttonfont = pygame.font.Font(str(pixelfont_path), 64)
 font = pygame.font.Font(str(pixelfont_path), 32)
 
+#update essentials variables
 def update():
     global screen,midx,midy,width,height,events,scale,mouse,buttonfont
     screen = pygame.display.get_surface()
@@ -27,6 +28,7 @@ def update():
     text_surface = font.render(str(mouse.pressed(1)), True, (255, 255, 255))
     screen.blit(text_surface, (700, 100))
 
+# background for the menus (checkerboard patterne based on color scheme)
 def backround(width, height, tile_size, scale):
     WIDTH, HEIGHT, TILE_SIZE = width, height, int(tile_size*scale)
     COLOR = es.appearance("color")
@@ -46,10 +48,13 @@ def backround(width, height, tile_size, scale):
                 color = DARK_COLOR
             pygame.draw.rect(screen, color, (x, y, TILE_SIZE, TILE_SIZE))
 
+#backround that is just a solid color
 def backroundcolor(color):
     screen.fill(color)
 
+#button class
 class button:
+    #initializes the button with a texture, size, and text key for localization
     def __init__(self, texture_path, size_x, size_y, text):
         self.path = Path(texture_path)
         if not self.path.is_absolute():
@@ -62,13 +67,16 @@ class button:
         self.font = pygame.font.Font(None, 64)
         self.text_key = text
     
+    #updates the button's position based on the center of the screen
     def update(self,x,y):
         self.pos = (midx+x-((self.sizex*self.lscale)/2), midy-y-(self.sizey*self.lscale)/2) 
 
+    #generates a hitbox for the button
     def hitbox(self,input):
         temp_rect = pygame.Rect(self.pos[0], self.pos[1], self.sizex*self.lscale,self.sizey*self.lscale) 
         return temp_rect.collidepoint(input)
-            
+
+    #shows the button on the screen and changes its scale if the mouse is hovering over it if responsive is 1        
     def show(self,x,y,responsive):
         global lang
         self.update(x,y)
@@ -80,6 +88,7 @@ class button:
         screen.blit(self.out, self.pos)
         self.text(0,-120,lang.currentlang.get(self.text_key, self.text_key))
     
+    #displays text on the button based on the current language
     def text(self,x,y,text):
         output = self.font.render(text, True, (255, 255, 255))
         text_rect = output.get_rect()
@@ -89,14 +98,17 @@ class button:
         text_rect.center = (button_center_x, button_center_y)
         screen.blit(output, text_rect) # text_rect
 
+    #checks if the button is being clicked
     def click(self,x,y,input):
         self.update(x,y)
         if input == 1 and self.hitbox(mouse.pos):
             return True
         else:
             return False
-        
+
+#picture class
 class picture:
+    #initializes the picture with a texture and size
     def __init__(self, path):
         self.path = Path(path)
         if not self.path.is_absolute():
@@ -104,14 +116,15 @@ class picture:
         self.out_original = pygame.image.load(str(self.path)).convert_alpha()
         self.sizex, self.sizey = self.out_original.get_size()
 
+    #displays the picture on the screen based on the center of the screen
     def show(self, x, y, lscale):
         width = int(self.sizex * lscale)
         height = int(self.sizey * lscale)
         self.out = pygame.transform.scale(self.out_original, (width, height))
         out_rect = self.out.get_rect(center=(midx + x, midy - y))
         screen.blit(self.out, out_rect)
-#and self.hitbox(mouse.pos)
 
+#settings menu build dictionary
 settingsbuild = {
     "title": "settings",
     "number_platforms": (10,300,es.settings["number_platforms"]),
@@ -123,22 +136,27 @@ settingsbuild = {
     "fly": es.settings["fly"],
 }
 
+#menu class
 class menu:
-
+    #text class
     class text:
-        # static centered text row
+        #initializes the text with a key for localization
         def __init__(self, value):
             self.value = value
 
+        #returns the set key for localization
         def __call__(self):
             return self.value
 
+        #returns the height of the text element for layout purposes
         def layout_height(self, lscale):
             return int(34 * lscale)
 
+        #returns the center offset for the text element to align it properly in the menu
         def label_center_offset(self, lscale):
             return int(17 * lscale)
 
+        #displays the text on the screen
         def load(self, x, y, lscale, placeholder):
             text_font = pygame.font.Font(str(pixelfont_path), max(int(24 * lscale), 16))
             text_value = lang.currentlang.get(self.value, self.value)
@@ -147,10 +165,10 @@ class menu:
             text_rect.midtop = (screen.get_width() // 2, int(y))
             screen.blit(text_surface, text_rect)
 
+    #slider class
     class slider:
-        #slider class
+        #initializes the slider
         def __init__(self,min,max,value,color):
-            #initializes the slider
             self.x = 0
             self.y = 0
             self.lscale = 1
@@ -165,17 +183,21 @@ class menu:
                 self.color = (0,0,255)
             else:
                 self.color = (0,0,255)
+
+        #returns the current value of the slider
         def __call__(self):
-            #returns the current value of the slider
             return self.value
+        
+        #returns the height of the slider element for layout purposes
         def layout_height(self, lscale):
-            # Slider track + larger value text area.
             return int(42 * lscale)
+        
+        #returns the center offset for the slider element to align it properly in the menu
         def label_center_offset(self, lscale):
-            # Align label with slider track center.
             return int(7 * lscale)
+        
+        #loads the slider
         def load(self,x,y,lscale,length):
-            #loads the slider
             #size and hitbox
             upper = self.max
             lower = self.min
@@ -201,7 +223,6 @@ class menu:
                 elif tempvalue > length:
                     tempvalue = length
                 self.value = int(lower + ((tempvalue / length) * value_range))
-                print(self.value)
             
             if value_range == 0:
                 interp = 0.0
@@ -220,26 +241,30 @@ class menu:
             pygame.draw.rect(screen, (150, 150, 150), rect2)
             screen.blit(text_surface, text_rect)
 
+    #toggle class
     class toggle:
-        #toggle class
+        #initializes the toggle
         def __init__(self, condition):
-            #initializes the toggle
             self.condition = condition
             self.default = condition
             self.knobx = 0
             self.lock = 0
-            self.speed = 1    
+            self.speed = 1 
+
+        #returns the current state of the toggle   
         def __call__(self):
-            #returns the current state of the toggle
             return self.condition
+        
+        #returns the height of the toggle element for layout purposes
         def layout_height(self, lscale):
-            # Toggle track + knob overhang.
             return int(36 * lscale)
+        
+        #returns the center offset for the toggle element to align it properly in the menu
         def label_center_offset(self, lscale):
-            # Align label with toggle track center.
             return int(10 * lscale)
+        
+        #loads the toggle
         def load(self,x,y,lscale, placeholder):
-            #loads the toggle
             #size and hitbox
             track_width = int(56 * lscale)
             track_height = int(20 * lscale)
@@ -284,50 +309,60 @@ class menu:
             pygame.draw.rect(screen, (self.red,self.green,0), rect)
             pygame.draw.rect(screen,(150,150,150),(int(x + self.knobx), int(y-((knob_size-track_height)/2)), knob_size, knob_size))
 
+    #dropdown menu class
     class dropdown:
-        #dropdown menu class
+        #initializes the dropdown menu with a list of selectable options
         def __init__(self, options):
-            #initializes the dropdown menu
             self.options = list(options)
-            print(self.options)
             self.selected = self.options[0]
             self.open = False
             self.lock = 0
+        
+        #returns the currently selected option
         def __call__(self):
-            #returns the currently selected option
             return self.selected
+        
+        #returns the height of the dropdown element for layout purposes
+        #when open, the dropdown needs room for every option; when closed, only one row
         def layout_height(self, lscale):
             row_height = 30 * lscale
             if self.open:
                 return int(row_height * len(self.options))
             return int(row_height)
+        
+        #returns the label offset so the menu label stays aligned with the visible row
         def label_center_offset(self, lscale):
-            # Align label with the first (selected) row center.
             return int(15 * lscale)
+
+        #draws the dropdown and handles open/close and option selection
         def load(self,x,y,lscale, placeholder):
             lx = x
             ly = y
             row_width = 200 * lscale
             row_height = 30 * lscale
             arrow_col_width = max(int(24 * lscale), 18)
-            if not mouse.pressed(3):
+
+            #reset click lock when mouse is released
+            if not mouse.pressed(1):
                 self.lock = 0
+
+            #open state: draw all options and allow selection
             if self.open:
                 counter = 0
                 ordered_options = [self.selected] + [opt for opt in self.options if opt != self.selected]
                 for option in ordered_options:
                     counter += 1
                     if counter % 2 == 1:
-                        color = (166, 115, 68)                    
+                        color = (166, 115, 68)
                     else:
                         color = (133, 94, 58)
-                    
+
                     rect_y = ly + ((counter - 1) * row_height)
-                    if lx <= mouse.pos[0] < lx + row_width and rect_y <= mouse.pos[1] < rect_y + row_height:
+                    hover = lx <= mouse.pos[0] < lx + row_width and rect_y <= mouse.pos[1] < rect_y + row_height
+                    if hover:
                         if mouse.pressed(3) and self.lock == 0:
                             self.selected = option
                             self.open = False
-                            print(self.options)
                             self.lock = 1
                         color = (
                             min(color[0] + 10, 255),
@@ -338,6 +373,7 @@ class menu:
                     tempfont = pygame.font.Font(str(pixelfont_path), 26*lscale)
                     display_key = f"color_scheme_{option}" if isinstance(option, int) else option
                     text_surface = tempfont.render(lang.currentlang.get(display_key, str(option)), True, (255, 255, 255))
+
                     pygame.draw.rect(screen, color, (lx, rect_y, row_width, row_height))
                     pygame.draw.rect(screen, (112, 78, 48), (lx, rect_y, arrow_col_width, row_height))
                     pygame.draw.line(screen, (199, 150, 98), (lx + arrow_col_width, rect_y), (lx + arrow_col_width, rect_y + row_height), 1)
@@ -346,7 +382,6 @@ class menu:
                         arrow_center_x = lx + (arrow_col_width // 2)
                         arrow_center_y = rect_y + (row_height // 2)
                         arrow_size = max(int(4 * lscale), 3)
-                        # Open state points up to indicate collapse direction.
                         arrow_points = [
                             (arrow_center_x, arrow_center_y - arrow_size),
                             (arrow_center_x - arrow_size, arrow_center_y + arrow_size),
@@ -357,10 +392,13 @@ class menu:
                     text_height = text_surface.get_height()
                     text_y = rect_y + (row_height - text_height) // 2
                     screen.blit(text_surface, (lx + arrow_col_width + 6, text_y - 6))
+
+            #closed state: draw selected option and open arrow
             else:
                 rect_y = ly
                 color = (166, 115, 68)
-                if lx <= mouse.pos[0] < lx + row_width and rect_y <= mouse.pos[1] < rect_y + row_height:
+                hover = lx <= mouse.pos[0] < lx + row_width and rect_y <= mouse.pos[1] < rect_y + row_height
+                if hover:
                     if mouse.pressed(3) and self.lock == 0:
                         self.open = True
                         self.lock = 1
@@ -369,9 +407,11 @@ class menu:
                         min(color[1] + 10, 255),
                         min(color[2] + 10, 255),
                     )
+
                 tempfont = pygame.font.Font(str(pixelfont_path), 26*lscale)
                 display_key = f"color_scheme_{self.selected}" if isinstance(self.selected, int) else self.selected
                 text_surface = tempfont.render(lang.currentlang.get(display_key, str(self.selected)), True, (255, 255, 255))
+
                 pygame.draw.rect(screen, color, (lx, rect_y, row_width, row_height))
                 pygame.draw.rect(screen, (112, 78, 48), (lx, rect_y, arrow_col_width, row_height))
                 pygame.draw.line(screen, (199, 150, 98), (lx + arrow_col_width, rect_y), (lx + arrow_col_width, rect_y + row_height), 1)
@@ -390,8 +430,7 @@ class menu:
                 text_y = rect_y + (row_height - text_height) // 2
                 screen.blit(text_surface, (lx + arrow_col_width + 6, text_y - 6))
 
-
-
+    #initializes the menu
     def __init__(self,name):
         self.name = name
         self.built = {}
@@ -406,7 +445,9 @@ class menu:
         self.scroll_key_next = 0
         self.scroll_key_delay = 300
         self.scroll_key_interval = 80
-        print(self.name)
+
+    #builds the menu based on a provided dictionary of elements to build
+    #uses the type of each value to determine which element class to use and how to initialize it
     def build(self, di):
         for key in di:
             optional1 = "none"
@@ -445,13 +486,7 @@ class menu:
                     out.selected = es.settings[key]
                 self.built[key] = out
         
-        print(self.built)
-
-        if "music2" in self.built:
-            print(self.built["music2"])
-        else:
-            print("music2 not built yet")
-
+    #displays the menu on the screen and handles scrolling
     def show(self):
         midx, midy, width, height, events, scale = es.basis()
         backroundcolor((200, 160, 80))
@@ -463,7 +498,7 @@ class menu:
         control_x = midx + center_offset
         label_right_x = midx - center_offset
 
-        # Calculate total menu height to determine scrolling bounds.
+        #calculate total menu height to determine scrolling bounds.
         total_height = 0
         for element in self.built:
             current = self.built[element]
@@ -479,14 +514,14 @@ class menu:
         top_margin = 100
         button_size = int(48 * lscale)
         button_gap = int(16 * lscale)
-        # Reserve space for the fixed main menu button at the bottom of the settings screen.
+        #reserve space for the fixed main menu button at the bottom of the settings screen.
         footer_reserved = int(120 * lscale)
         bottom_margin = max(int(40 * lscale), footer_reserved)
         max_offset = 0
         min_offset = min(0, height - top_margin - bottom_margin - total_height)
         self.scroll_offset = max(min_offset, min(max_offset, self.scroll_offset))
 
-        # Right-side arrow buttons for scrolling in the vertical center.
+        #right-side arrow buttons for scrolling in the vertical center.
         arrow_x = width - 40 - button_size
         arrow_y = height // 2 - ((button_size * 2 + button_gap) // 2)
         up_rect = pygame.Rect(arrow_x, arrow_y, button_size, button_size)
@@ -541,7 +576,7 @@ class menu:
                     self.scroll_offset -= self.scroll_step
             self.scroll_offset = max(min_offset, min(max_offset, self.scroll_offset))
 
-        # scrolling (buttons and arrow keys)
+        #scrolling (buttons and arrow keys)
         current_time = pygame.time.get_ticks()
         if can_scroll and mouse.pressed(1) and (hover_up or hover_down):
             held_button = 'up' if hover_up else 'down'
@@ -558,7 +593,7 @@ class menu:
         else:
             self.scroll_button_hold = None
 
-        # Support holding the arrow keys.
+        #support holding the arrow keys.
         keys = pygame.key.get_pressed()
         key_scroll = None
         if can_scroll and keys[pygame.K_UP]:
@@ -604,7 +639,7 @@ class menu:
 
             current.load(control_x, ly, lscale, 140)
 
-            # Keep runtime settings synchronized with the menu controls.
+            #keep runtime settings synchronized with the menu controls.
             if element in es.settings:
                 if isinstance(current, self.slider):
                     es.settings[element] = int(current())
@@ -625,17 +660,18 @@ class menu:
                 ly += dropdown_extra_gap
             pass
 
+#create the settings menu using the build dictionary
 settingsmenu = menu("settings")
 settingsmenu.build(settingsbuild)
 
-
+#initialize the markdown renderer
 md = MarkdownRenderer()
 current_info_file = None
 
+#function to display markdown files as info screens
 def info(mdfile_path):
     global screen, width, height, current_info_file
 
-    # Prüfen, ob die Datei existiert
     if not Path(mdfile_path).exists():
         print(f"Error: File {mdfile_path} not found.")
         return

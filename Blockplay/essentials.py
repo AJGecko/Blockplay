@@ -1,16 +1,18 @@
 import pygame
 from pathlib import Path
 
+#set assets paths
 FONT_DIR = Path(__file__).resolve().parent / "assets/fonts"
 pixelfont_path = FONT_DIR / "grand9k_pixel.ttf"
 
-
+#global variables
 scale = 1
 width = 0
 height = 0
 events = None
 events_list = []
 
+#settings
 settings = {
     "number_platforms": 30,
     "difficulty": "normal",
@@ -21,6 +23,7 @@ settings = {
     "volume": 35
 }
 
+#appearance configuration
 current_skin = settings["skin"]
 color_scheme = 1
 color_schemes = {
@@ -31,8 +34,7 @@ color_schemes = {
     5: ((135, 75, 205), (155, 95, 225)),
 }
 
-
-
+#returns the current color scheme or skin based on the mode
 def appearance(mode):
     global color_scheme, current_skin
     if mode == "color":
@@ -40,13 +42,16 @@ def appearance(mode):
     if mode == "skin":
         return current_skin
 
+#mouse class
 class mouse_():
+    #init mouse position and button state
     def __init__(self):
         self.pos = (0,0)
         self.x = self.pos[0]
         self.y = self.pos[1]
-        self.button_down = False  # Speichert gedrückten Zustand
+        self.button_down = False
 
+    #update mouse position and button state based on events
     def update(self, event=None):
         if event is None:
             self.pos = pygame.mouse.get_pos()
@@ -69,10 +74,14 @@ class mouse_():
                 self.pos = (int(event.x * width), int(event.y * height))
         self.x, self.y = self.pos
 
+    #returns if a button is currently pressed
     def pressed(self, button):
         return self.button_down
+    
+#create mouse instance
 mouse = mouse_()
 
+#update function to update global variables and mouse state
 def update():
     screen = pygame.display.get_surface()
     global width,height,events,scale,current_skin,color_scheme,events_list
@@ -85,22 +94,25 @@ def update():
         events = event
         mouse.update(event)
 
+#set midx and midy first to avoid errors
 midx = 0
 midy = 0
+
+#update midx and midy (the middle of the screen)
 def mid():
     global midx, midy
     midx = width / 2
     midy = height / 2
 
+#return the basis variables for the game
 def basis():
     mid()
     return midx,midy,width,height,events,scale
 
+#check for collision between two rectangles
 def collision(one, two):
     if isinstance(one, tuple):
         one = pygame.Rect(*one)
     if isinstance(two, tuple):
         two = pygame.Rect(*two)
     return one.colliderect(two) 
-    pass
-

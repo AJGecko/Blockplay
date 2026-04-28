@@ -4,7 +4,7 @@
 #  "pygame_markdown",
 # ]
 # ///
-#go
+#for the web version
 
 import pygame
 import sys

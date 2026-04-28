@@ -31,7 +31,6 @@ folder_names = []
 for p in folders:
     folder_names.append(p.name)
 folder_names.sort()
-print(folder_names)
 
 player_texture = []
 for p in folder_names:
@@ -64,6 +63,8 @@ class camera:
 
 #player class
 class player:
+
+    #setup for the player class
     def __init__(self, id, skin):
         self.x = 0 
         self.y = 0
@@ -78,8 +79,12 @@ class player:
         self.skin = skin
         self.direction = 0
         self.gravity = 1
+
+    #set player visibility
     def visible(self, v):
         self.vis = v
+
+    #show the player
     def show(self):
         #lt stands for local texture
         lt = player_texture[folder_names.index(self.skin)]
@@ -96,6 +101,8 @@ class player:
         self.out_rect = self.out2.get_rect(center=(midx+self.x, midy+self.y))
         if self.vis == 1:
             screen.blit(self.out2, self.out_rect)
+
+    #update the player position and scale
     def update(self,x,y,lscale):
         self.x = x
         self.y = y
@@ -104,6 +111,7 @@ class player:
 
 #platform class
 class platform:
+    #setup for the platform class
     def __init__(self):
         self.x = 0
         self.y = 0
@@ -113,6 +121,8 @@ class platform:
         self.sizey = 400
         self.location = 1
         self.vis = 1
+
+    #show the platform
     def show(self):
         global platform_texture
         self.out1 = platform_texture
@@ -120,11 +130,15 @@ class platform:
         self.out_rect = self.out2.get_rect(center=(midx+self.x, midy+self.y))
         if self.vis == 1:
             screen.blit(self.out2, self.out_rect)
+
+    #update the platform position and scale (manually)
     def update(self,x,y,lscale):
         self.x = x
         self.y = y
         self.pos = (self.x,self.y)
         self.lscale = lscale 
+
+    #update the platform position and scale (automatically based on its location in the level)
     def updateauto(self):
         self.x = (platformpositions_x[self.location]-cam.x)*scale*cam.fov
         self.y = (platformpositions_y[self.location]+cam.y)*scale*cam.fov
@@ -142,14 +156,17 @@ class platform:
 
 #finish line class
 class finish:
+    #setup for the finish line class
     def __init__(self):
         self.columns = 4
         self.base_cell_size = 48
         self.min_cell_size = 12
 
+    #return the cell size based on the current scale
     def _cell_size(self, lscale):
         return max(int(self.base_cell_size * lscale), self.min_cell_size)
 
+    #check for collision between the player and the finish line
     def hitbox(self, x, player_rect, lscale):
         pixels_per_world = scale * cam.fov
         if pixels_per_world <= 0:
@@ -161,6 +178,7 @@ class finish:
         right_world = x + (total_width_world / 2)
         return bool(player_rect.right >= left_world and player_rect.left <= right_world)
 
+    #show the finish line
     def show(self,x,y,lscale):
         if "platformpositions_x" not in globals() or len(platformpositions_x) == 0:
             return
@@ -177,8 +195,7 @@ class finish:
 
         if left_x >= width or left_x + total_width <= 0:
             return
-
-        # Anchor rows to world y=0 so camera height changes do not cause color flicker.
+        
         anchor_y = midy + (cam.y * pixels_per_world)
         start_row = math.floor((0 - anchor_y) / cell_size) - 1
         end_row = math.ceil((height - anchor_y) / cell_size) + 1
@@ -317,6 +334,7 @@ def game(number):
             jump = 0
             can_jump = 0
             new_highscore = False
+            
     #steering
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
