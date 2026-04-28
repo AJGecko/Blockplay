@@ -3,7 +3,7 @@
 
 A Python-based game powered by **Pygame**.
 
-**Current Version:** `0.1.0`
+**Current Version:** `0.1.0` 
 
 ---
 ## Currently planned 
