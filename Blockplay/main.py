@@ -61,7 +61,7 @@ button_menu = gui.button(str(ASSETS / 'button.png'), 400, 100, "main_menu")
 button_yes = gui.button(str(ASSETS / 'button.png'), 180, 80, "yes")
 button_no = gui.button(str(ASSETS / 'button.png'), 180, 80, "no")
 logo = gui.picture(str(ASSETS / 'logo.png'))
-print("Hello World!")
+print("Hello World!") # Hello World is just chilling here.
 lock = 0
 pause_lock = 0
 pause_button_lock = 0
@@ -180,7 +180,6 @@ async def main():
             if button4.click(0,-120,mouse.pressed(1)):
                 mouse.button_down = False
                 currentmenu = 7
-
             if confirm_exit:
                 button_yes.show(-310, -360, 1)
                 button_no.show(310, -360, 1)
