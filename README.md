@@ -10,6 +10,8 @@ There is also a web version of the game, which is available at [Blockplay Web Ve
 ---
 ## About the Project
 
+Blockplay is a simple platformer game where you can move and jump around. The goal is reach the finish line as fast as possible. The pakour is randomly generated.
+
 I wanted to create a relaxed but fun game, bringing new life to an old idea from one of my Scratch projects and learning more about Pygame along the way.
 
 This project is inspired by one of my old scratch projects:
@@ -28,6 +30,12 @@ This project is inspired by one of my old scratch projects:
 > Touch support is currently experimental and may not work perfectly on all devices.
 
 > You can change the language in the settings. Supported are English, German, French and Spanish. (French and Spanish are autotranslated, so they may contain mistakes.)
+
+
+## Currently planned
+- Adding an exe file for Windows
+
+
 ## Requirements
 
 For the best experience and full compatibility, please ensure you are using the following versions or newer :

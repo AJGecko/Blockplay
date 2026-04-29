@@ -317,7 +317,6 @@ def game(number):
     if gen == 1:
             global platformpositions, platformpositions_x, platformpositions_y, new_highscore
             platformpositions = generate(number,2.3)
-            print(platformpositions)
             platformpositions_x = platformpositions[0]
             platformpositions_y = platformpositions[1]
             cam.x = 0
