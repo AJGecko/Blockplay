@@ -26,6 +26,9 @@ screen = pygame.display.set_mode((1920, 1080), pygame.RESIZABLE)
 pygame.display.set_caption("Blockplay")
 clock = pygame.time.Clock()
 
+#set tickspeed
+tickspeed = 1.0
+
 #import other files
 import ingame
 import essentials as es
@@ -111,7 +114,7 @@ def draw_center_title(key):
 
 
 async def main():
-    global running, currentmenu, midx, midy, width, height, scale, pause_lock, pause_button_lock, confirm_exit, screen
+    global running, currentmenu, midx, midy, width, height, scale, pause_lock, pause_button_lock, confirm_exit, screen, tickspeed
     while running:
         #update essentials and gui
         update()
@@ -166,6 +169,7 @@ async def main():
             if button1.click(0,0,mouse.pressed(1)):
                 ingame.gen = 1
                 ingame.timer_on = False
+                mouse.button_down = False
                 currentmenu = 2
             if button2.click(0,-360,mouse.pressed(1)):
                 confirm_exit = True
@@ -316,7 +320,7 @@ async def main():
         update_menu_music()
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(60*tickspeed)
         await asyncio.sleep(0)
 
     sys.exit()
