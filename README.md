@@ -64,3 +64,5 @@ For the best experience and full compatibility, please ensure you are using the 
 ## Credits
 - Music by <a href="https://pixabay.com/de/users/viacheslavstarostin-50153119/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=471936">ViacheslavStarostin</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=471936">Pixabay</a>
 
+## This project uses AI
+Used GitHub Copilot for debugging. French and Spanish are autotranslated with Gemma 4.
