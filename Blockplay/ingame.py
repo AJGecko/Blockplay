@@ -335,22 +335,27 @@ def game(number):
             new_highscore = False
             
     #steering
+    mousesteeringlock = False
+
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
         player1.direction = -1
         cam.x -= 8
+        mousesteeringlock = True
     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
         if not timer_on:
             timer_on = True
+        mousesteeringlock = True
         player1.direction = 1
         cam.x += 8
     if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and jump == 0:
+        mousesteeringlock = True
         cam.y -= 4
     if not keys[pygame.K_LEFT] and not keys[pygame.K_a] and not keys[pygame.K_RIGHT] and not keys[pygame.K_d]:
         player1.direction = 0
 
     #mouse steering
-    if es.mouse.pressed(1):
+    if es.mouse.pressed(1) and not mousesteeringlock:
         mouse_x, mouse_y = es.mouse.pos
         if mouse_x < midx - 100*scale:
             player1.direction = -1
@@ -365,8 +370,8 @@ def game(number):
         if mouse_y > midy + 100*scale and jump == 0:
             cam.y -= 4
 
-    #jump
-    if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE] or (mouse_y < midy - 100*scale and es.mouse.pressed(1))) and can_jump == 1:
+    #jump and gravity
+    if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE] or (mouse_y < midy - 100*scale and es.mouse.pressed(1) and not (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]))) and can_jump == 1:
         jump = 1
         can_jump = 0
         camy_storage = cam.y

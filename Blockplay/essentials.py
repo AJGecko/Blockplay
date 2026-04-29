@@ -11,6 +11,7 @@ width = 0
 height = 0
 events = None
 events_list = []
+touch = 0
 
 #settings
 settings = {
@@ -27,11 +28,11 @@ settings = {
 current_skin = settings["skin"]
 color_scheme = 1
 color_schemes = {
-    1: ((151, 212, 38), (167, 233, 43)),
-    2: ((120, 180, 30), (140, 200, 35)),
-    3: ((45, 130, 200), (60, 150, 220)),
-    4: ((180, 50, 50), (205, 70, 70)),
-    5: ((135, 75, 205), (155, 95, 225)),
+    1: ((151, 212, 38), (167, 233, 43)), #light green
+    2: ((120, 180, 30), (140, 200, 35)), #green
+    3: ((45, 130, 200), (60, 150, 220)), #blue
+    4: ((180, 50, 50), (205, 70, 70)),   #red
+    5: ((135, 75, 205), (155, 95, 225)), #purple
 }
 
 #returns the current color scheme or skin based on the mode
@@ -42,7 +43,7 @@ def appearance(mode):
     if mode == "skin":
         return current_skin
 
-#mouse class
+#mouse (touch) class
 class mouse_():
     #init mouse position and button state
     def __init__(self):
@@ -53,25 +54,32 @@ class mouse_():
 
     #update mouse position and button state based on events
     def update(self, event=None):
+        global touch
         if event is None:
             self.pos = pygame.mouse.get_pos()
         else:
             if event.type == pygame.MOUSEMOTION:
+                touch = 0
                 self.pos = event.pos
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                touch = 0
                 self.pos = event.pos
                 self.button_down = True
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                touch = 0
                 self.pos = event.pos
                 self.button_down = False
             elif event.type == pygame.FINGERDOWN:
                 self.pos = (int(event.x * width), int(event.y * height))
+                touch = 1
                 self.button_down = True
             elif event.type == pygame.FINGERUP:
                 self.pos = (int(event.x * width), int(event.y * height))
+                touch = 1
                 self.button_down = False
             elif event.type == pygame.FINGERMOTION:
                 self.pos = (int(event.x * width), int(event.y * height))
+                touch = 1
         self.x, self.y = self.pos
 
     #returns if a button is currently pressed

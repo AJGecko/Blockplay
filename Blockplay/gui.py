@@ -80,7 +80,7 @@ class button:
     def show(self,x,y,responsive):
         global lang
         self.update(x,y)
-        if self.hitbox(mouse.pos) and responsive==1:
+        if self.hitbox(mouse.pos) and (es.touch == 0 or mouse.button_down) and responsive==1:
             self.lscale = 1.05
         else:
             self.lscale = 1
@@ -360,7 +360,7 @@ class menu:
                     rect_y = ly + ((counter - 1) * row_height)
                     hover = lx <= mouse.pos[0] < lx + row_width and rect_y <= mouse.pos[1] < rect_y + row_height
                     if hover:
-                        if mouse.pressed(3) and self.lock == 0:
+                        if mouse.pressed(1) and (es.touch == 0 or mouse.button_down) and self.lock == 0:
                             self.selected = option
                             self.open = False
                             self.lock = 1
