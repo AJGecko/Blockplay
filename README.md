@@ -1,5 +1,5 @@
-# Blockplay - WIP (Expirental)
-> **Note:** This branch represents the current state of the **Codespace**. It contains experimental features, unfinished code, and may be unstable.
+# Blockplay - WIP
+> **Note:** This version is a Work In Progress and does not represent the final product.
 
 A Python-based game powered by **Pygame**.
 
@@ -13,6 +13,8 @@ There is also a web version of the game, which is available at [Blockplay Web Ve
 Blockplay is a simple platformer game where you can move and jump around. The goal is reach the finish line as fast as possible. The pakour is randomly generated.
 
 I wanted to create a relaxed but fun game, bringing new life to an old idea from one of my Scratch projects and learning more about Pygame along the way.
+
+The [Devlogs](https://flavortown.hackclub.com/projects/17261) from Flavortown.
 
 This project is inspired by one of my old scratch projects:
 [Blockplay 1.2 on Scratch](https://scratch.mit.edu/projects/967218273)
@@ -34,7 +36,7 @@ This project is inspired by one of my old scratch projects:
 
 ## Currently planned
 - Adding an exe file for Windows
-
+- Revision of jump and gravitational physics
 
 ## Requirements
 
@@ -64,3 +66,5 @@ For the best experience and full compatibility, please ensure you are using the 
 ## Credits
 - Music by <a href="https://pixabay.com/de/users/viacheslavstarostin-50153119/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=471936">ViacheslavStarostin</a> from <a href="https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=471936">Pixabay</a>
 
+## This project uses AI
+Used GitHub Copilot for debugging. French and Spanish are autotranslated with Gemma 4.
