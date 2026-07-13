@@ -53,6 +53,7 @@ timer_on = False
 finishtime = None
 mouse_x = 0
 mouse_y = 0
+nolean = False
 
 #camera class
 class camera:
@@ -79,6 +80,12 @@ class player:
         self.skin = skin
         self.direction = 0
         self.gravity = 1
+
+        class velocity: 
+            def __init__(self):
+                self.x = 0
+                self.y = 0
+        self.velocity = velocity()
 
     #set player visibility
     def visible(self, v):
@@ -305,7 +312,7 @@ def generate(number, multiplier):
 #runs the game
 def game(number):
     #global variables
-    global midx,midy,width,height,events,scale,font,platform_texture,gravity,last_collision_index,timer_on,finishtime
+    global midx,midy,width,height,events,scale,font,platform_texture,gravity,last_collision_index,timer_on,finishtime,nolean
     midx,midy,width,height,events,scale = es.basis()
     global gen, p1, p2, p3, p4, p5, menu, jump, can_jump, camy_storage, mouse_x, mouse_y
 
@@ -340,19 +347,28 @@ def game(number):
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
         player1.direction = -1
-        cam.x -= 8
+        if player1.velocity.x < -8:
+            player1.velocity.x = -8
+        else:
+            player1.velocity.x -= 1
         mousesteeringlock = True
     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
         if not timer_on:
             timer_on = True
         mousesteeringlock = True
         player1.direction = 1
-        cam.x += 8
+        if player1.velocity.x > 8:
+            player1.velocity.x = 8
+        else:
+            player1.velocity.x += 1
     if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and jump == 0:
         mousesteeringlock = True
         cam.y -= 4
     if not keys[pygame.K_LEFT] and not keys[pygame.K_a] and not keys[pygame.K_RIGHT] and not keys[pygame.K_d]:
         player1.direction = 0
+        player1.velocity.x *= 0.8
+        if abs(player1.velocity.x) < 0.1:
+            player1.velocity.x = 0
 
     #mouse steering
     if es.mouse.pressed(1) and not mousesteeringlock:
@@ -370,25 +386,21 @@ def game(number):
         if mouse_y > midy + 100*scale and jump == 0:
             cam.y -= 4
 
-    #jump and gravity
-    if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE] or (mouse_y < midy - 100*scale and es.mouse.pressed(1) and not (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]))) and can_jump == 1:
-        jump = 1
-        can_jump = 0
-        camy_storage = cam.y
-        player1.gravity = 0
-    elif jump == 0:
-        if player1.gravity + 0.1 > 1:
-            player1.gravity = 1
-        else:
-            player1.gravity += 0.1
+    cam.x += player1.velocity.x
 
-    if jump == 1:
-        if cam.y - camy_storage >= 200 and cam.y - camy_storage < 300:
-            cam.y += 7
-        elif cam.y - camy_storage >= 300:
-            jump = 0
-        else:
-            cam.y += 10
+    #jump
+    if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE] or (mouse_y < midy - 100*scale and es.mouse.pressed(1) and not (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]))) and can_jump == 1:
+        if can_jump == 1:
+            player1.velocity.y = -20
+            can_jump = 0
+
+    #gravity
+    cam.y -= player1.velocity.y
+    
+    if player1.velocity.y < 10:
+        player1.velocity.y += 0.7 * player1.gravity
+    else:
+        player1.velocity.y = 12
 
     #timer
     time = timer(timer_on)
@@ -411,7 +423,6 @@ def game(number):
         timer_on = False
         return "won"
 
-
     difficulty = es.settings.get("difficulty", "normal")
 
     for i in range(number):
@@ -422,27 +433,50 @@ def game(number):
             400,
         )
         if player_rect.colliderect(platform_rect):
-            if difficulty == "easy":
-                cam.y = (player1.sizey / 2 + platform_rect.height / 2) - platformpositions_y[i] - 1
-                gravity = 0
-                can_jump = 1
-                break
-
-            landing_overlap = player_rect.bottom - platform_rect.top
-            if -30 <= landing_overlap <= 40:
-                min_overlap = min(player_rect.right, platform_rect.right) - max(player_rect.left, platform_rect.left)
-                if min_overlap > 5:
-                    cam.y = (player1.sizey / 2 + platform_rect.height / 2) - platformpositions_y[i] - 1
-                    gravity = 0
-                    can_jump = 1
+            half_player_x = player1.sizex / 2
+            half_player_y = player1.sizey / 2
+            half_platform_x = platform_rect.width / 2
+            half_platform_y = platform_rect.height / 2
+            
+            # Calculate the overlap in both horizontal and vertical directions to determine the collision side
+            horizontal_overlap = min(player_rect.right, platform_rect.right) - max(player_rect.left, platform_rect.left)
+            vertical_overlap = min(player_rect.bottom, platform_rect.bottom) - max(player_rect.top, platform_rect.top)
+            
+            # Determine which side the collision occurred on based on the overlap values.
+            if horizontal_overlap > 0 and vertical_overlap > 0:
+                if vertical_overlap < horizontal_overlap:
+                    # vertical collision (top or bottom)
+                    if player_rect.centery < platform_rect.centery:
+                        cam.y = -platformpositions_y[i] + (half_platform_y + half_player_y) - 1
+                        gravity = 0
+                        can_jump = 1
+                        player1.velocity.y = 0
+                        break
+                    else:
+                        if player1.velocity.y < 0: 
+                            player1.velocity.y = 0
+                        cam.y = -platformpositions_y[i] - (half_platform_y + half_player_y)
+                        can_jump = 0
+                        break
+                else:
+                    # horizontal collision (left or right)
+                    nolean = 0
+                    if player_rect.centerx < platform_rect.centerx:
+                        if player1.velocity.x > 0:  
+                            player1.velocity.x = 0
+                        cam.x = platformpositions_x[i] - (half_platform_x + half_player_x)
+                    else:
+                        if player1.velocity.x < 0: 
+                            player1.velocity.x = 0
+                        cam.x = platformpositions_x[i] + (half_platform_x + half_player_x)
+                    can_jump = 0 
                     break
-            can_jump = 0
+            else:
+                can_jump = 0
+        else:
+            nolean = 1   
 
-    #gravity
-    if jump == 0:
-        cam.y -= 8*(player1.gravity*gravity)
-    
-    gravity = 1
+   
 
     # death limit (Adapts to the nearest platform above the player.)
     search_radius = 900
@@ -468,7 +502,7 @@ def game(number):
         cam.y += 20
 
     #game display and update
-    player1.update(0+(10*player1.direction),0,scale)
+    player1.update(0+((10*player1.direction)*nolean),0,scale)
     player1.show()
     p1.updateauto()
     p1.show()
