@@ -432,7 +432,18 @@ def game(number):
             200,
             400,
         )
-        if player_rect.colliderect(platform_rect):
+        edge_tolerance = 5
+        top_y_tolerance = 18
+        platform_left = platform_rect.left
+        platform_right = platform_rect.right
+        top_x_ok = (
+            player_rect.right > platform_left - edge_tolerance and
+            player_rect.left < platform_right + edge_tolerance
+        )
+        top_y_ok = abs(player_rect.bottom - platform_rect.top) <= top_y_tolerance
+        landing_candidate = player1.velocity.y >= 0 and top_x_ok and top_y_ok
+
+        if player_rect.colliderect(platform_rect) or landing_candidate:
             half_player_x = player1.sizex / 2
             half_player_y = player1.sizey / 2
             half_platform_x = platform_rect.width / 2
@@ -446,7 +457,7 @@ def game(number):
             if horizontal_overlap > 0 and vertical_overlap > 0:
                 if vertical_overlap < horizontal_overlap:
                     # vertical collision (top or bottom)
-                    if player_rect.centery < platform_rect.centery:
+                    if player_rect.centery < platform_rect.centery and player1.velocity.y >= 0 and top_x_ok:
                         cam.y = -platformpositions_y[i] + (half_platform_y + half_player_y) - 1
                         gravity = 0
                         can_jump = 1
@@ -472,6 +483,12 @@ def game(number):
                     can_jump = 0 
                     break
             else:
+                if landing_candidate:
+                    cam.y = -platformpositions_y[i] + (half_platform_y + half_player_y) - 1
+                    gravity = 0
+                    can_jump = 1
+                    player1.velocity.y = 0
+                    break
                 can_jump = 0
         else:
             nolean = 1   
