@@ -400,7 +400,7 @@ def game(number):
     if player1.velocity.y < 10:
         player1.velocity.y += 0.7 * player1.gravity
     else:
-        player1.velocity.y = 12
+        player1.velocity.y = 14
 
     #timer
     time = timer(timer_on)
