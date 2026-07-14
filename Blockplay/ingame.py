@@ -426,23 +426,34 @@ def game(number):
     difficulty = es.settings.get("difficulty", "normal")
 
     for i in range(number):
+
         platform_rect = pygame.Rect(
             int(platformpositions_x[i] - 200 / 2),
             int(platformpositions_y[i] - 400 / 2),
             200,
             400,
         )
+
         edge_tolerance = 5
         top_y_tolerance = 18
+
+        # Check if the player is landing on the platform from above
         platform_left = platform_rect.left
         platform_right = platform_rect.right
+        
+        # Check if the player's bottom is within the top_y_tolerance of the platform's top and if the player's horizontal position overlaps with the platform's width (with some edge tolerance).
         top_x_ok = (
             player_rect.right > platform_left - edge_tolerance and
             player_rect.left < platform_right + edge_tolerance
         )
+        
+        # Check if the player's bottom is within the top_y_tolerance of the platform's top
         top_y_ok = abs(player_rect.bottom - platform_rect.top) <= top_y_tolerance
+
+        # Determine if the player is a candidate for landing on the platform based on their vertical velocity and position relative to the platform.
         landing_candidate = player1.velocity.y >= 0 and top_x_ok and top_y_ok
 
+        # Check for collision between the player and the platform, or if the player is a landing candidate.
         if player_rect.colliderect(platform_rect) or landing_candidate:
             half_player_x = player1.sizex / 2
             half_player_y = player1.sizey / 2
@@ -483,6 +494,7 @@ def game(number):
                     can_jump = 0 
                     break
             else:
+                # If the player is a landing candidate but not colliding, adjust the camera and player state accordingly.
                 if landing_candidate:
                     cam.y = -platformpositions_y[i] + (half_platform_y + half_player_y) - 1
                     gravity = 0
@@ -491,9 +503,9 @@ def game(number):
                     break
                 can_jump = 0
         else:
-            nolean = 1   
-
-   
+            # If no collision is detected, reset jump state.
+            nolean = 1
+            can_jump = 0  
 
     # death limit (Adapts to the nearest platform above the player.)
     search_radius = 900
