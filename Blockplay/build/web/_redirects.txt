@@ -1,1 +1,1 @@
-/cdn/* https://pygame-web.github.io/cdn/:splat 200
+/cdn/* https://pygame-web.github.io/cdn/ 302
