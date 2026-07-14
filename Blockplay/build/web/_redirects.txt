@@ -1,0 +1,1 @@
+/cdn/* https://pygame-web.github.io/cdn/:splat 200
