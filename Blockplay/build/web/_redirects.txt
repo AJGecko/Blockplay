@@ -1,0 +1,1 @@
+/cdn/* https://pygame-web.github.io/cdn/ 302
