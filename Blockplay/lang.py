@@ -42,6 +42,7 @@ def updatelang():
                 "number_platforms": "Number of platforms",
                 "difficulty": "Difficulty",
                 "music": "Music",
+                "lazycam": "Lazy Camera",
                 "test": "Test",
                 
                 #dropdown menu:
@@ -101,6 +102,7 @@ def updatelang():
                 "number_platforms": "Anzahl Plattformen",
                 "difficulty": "Schwierigkeit",
                 "music": "Musik",
+                "lazycam": "Lazy Kamera",
                 "test": "Test",
                 
                 #dropdown menu:
@@ -159,6 +161,7 @@ def updatelang():
                 "number_platforms": "Nombre de plateformes",
                 "difficulty": "Difficulté",
                 "music": "Musique",
+                "lazycam": "Caméra fluide",
                 "test": "Test",
                 
                 #dropdown menu:
@@ -217,6 +220,7 @@ def updatelang():
                 "number_platforms": "Número de plataformas",
                 "difficulty": "Dificultad",
                 "music": "Música",
+                "lazycam": "Cámara suave",
                 "test": "Prueba",
                 
                 #dropdown menu:

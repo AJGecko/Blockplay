@@ -153,7 +153,8 @@ async def main():
             button1.show(0,0,1)
             button4.show(0,-120,1)
             button3.show(0,-240,1)
-            button2.show(0,-360,1)
+            if sys.platform != "emscripten":
+                button2.show(0,-360,1)
 
             #logo display
             logo.show(25,320,0.5)

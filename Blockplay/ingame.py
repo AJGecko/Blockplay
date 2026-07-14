@@ -54,6 +54,24 @@ finishtime = None
 mouse_x = 0
 mouse_y = 0
 nolean = False
+render_offset_x = 0
+render_offset_y = 0
+render_offset_fx = 0.0
+render_offset_fy = 0.0
+lazycam = es.settings["lazycam"]
+
+
+def set_render_offset(x=0, y=0):
+    global render_offset_x, render_offset_y
+    render_offset_x = x
+    render_offset_y = y
+
+
+def update_render_offset(target_x, target_y, smoothing=0.12):
+    global render_offset_fx, render_offset_fy
+    render_offset_fx += (target_x - render_offset_fx) * smoothing
+    render_offset_fy += (target_y - render_offset_fy) * smoothing
+    set_render_offset(int(render_offset_fx), int(render_offset_fy))
 
 #camera class
 class camera:
@@ -93,6 +111,7 @@ class player:
 
     #show the player
     def show(self):
+        global render_offset_x, render_offset_y
         #lt stands for local texture
         lt = player_texture[folder_names.index(self.skin)]
         lt1 = lt[0]
@@ -105,7 +124,7 @@ class player:
         if self.direction == -1:
             self.out = lt3
         self.out2 = pygame.transform.scale(self.out, (self.sizex*self.lscale,self.sizey*self.lscale))
-        self.out_rect = self.out2.get_rect(center=(midx+self.x, midy+self.y))
+        self.out_rect = self.out2.get_rect(center=(midx+self.x+render_offset_x, midy+self.y+render_offset_y))
         if self.vis == 1:
             screen.blit(self.out2, self.out_rect)
 
@@ -131,10 +150,11 @@ class platform:
 
     #show the platform
     def show(self):
+        global render_offset_x, render_offset_y
         global platform_texture
         self.out1 = platform_texture
         self.out2 = pygame.transform.scale(self.out1, (self.sizex*self.lscale,self.sizey*self.lscale))
-        self.out_rect = self.out2.get_rect(center=(midx+self.x, midy+self.y))
+        self.out_rect = self.out2.get_rect(center=(midx+self.x+render_offset_x, midy+self.y+render_offset_y))
         if self.vis == 1:
             screen.blit(self.out2, self.out_rect)
 
@@ -187,6 +207,7 @@ class finish:
 
     #show the finish line
     def show(self,x,y,lscale):
+        global render_offset_x, render_offset_y
         if "platformpositions_x" not in globals() or len(platformpositions_x) == 0:
             return
 
@@ -197,13 +218,13 @@ class finish:
         cell_size = self._cell_size(lscale)
         columns = self.columns
         total_width = columns * cell_size
-        screen_x = int(midx + (x - cam.x) * pixels_per_world)
+        screen_x = int(midx + (x - cam.x) * pixels_per_world + render_offset_x)
         left_x = screen_x - (total_width // 2)
 
         if left_x >= width or left_x + total_width <= 0:
             return
         
-        anchor_y = midy + (cam.y * pixels_per_world)
+        anchor_y = midy + (cam.y * pixels_per_world) + render_offset_y
         start_row = math.floor((0 - anchor_y) / cell_size) - 1
         end_row = math.ceil((height - anchor_y) / cell_size) + 1
 
@@ -312,7 +333,7 @@ def generate(number, multiplier):
 #runs the game
 def game(number):
     #global variables
-    global midx,midy,width,height,events,scale,font,platform_texture,gravity,last_collision_index,timer_on,finishtime,nolean
+    global midx,midy,width,height,events,scale,font,platform_texture,gravity,last_collision_index,timer_on,finishtime,nolean,render_offset_fx,render_offset_fy
     midx,midy,width,height,events,scale = es.basis()
     global gen, p1, p2, p3, p4, p5, menu, jump, can_jump, camy_storage, mouse_x, mouse_y
 
@@ -340,6 +361,9 @@ def game(number):
             jump = 0
             can_jump = 0
             new_highscore = False
+            render_offset_fx = 0.0
+            render_offset_fy = 0.0
+            set_render_offset(0, 0)
             
     #steering
     mousesteeringlock = False
@@ -363,7 +387,8 @@ def game(number):
             player1.velocity.x += 1
     if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and jump == 0:
         mousesteeringlock = True
-        cam.y -= 4
+        if player1.velocity.y < 14:
+            player1.velocity.y += 1
     if not keys[pygame.K_LEFT] and not keys[pygame.K_a] and not keys[pygame.K_RIGHT] and not keys[pygame.K_d]:
         player1.direction = 0
         player1.velocity.x *= 0.8
@@ -397,7 +422,7 @@ def game(number):
     #gravity
     cam.y -= player1.velocity.y
     
-    if player1.velocity.y < 10:
+    if player1.velocity.y < 14:
         player1.velocity.y += 0.7 * player1.gravity
     else:
         player1.velocity.y = 14
@@ -529,6 +554,21 @@ def game(number):
     #debug
     if (es.settings["fly"] and keys[pygame.K_u]):
         cam.y += 20
+
+    #smooth visual camera lag (graphics only)
+    lazycam = es.settings["lazycam"]
+    if lazycam:
+        target_offset_x = player1.velocity.x * 12
+        target_offset_y = player1.velocity.y * 7
+        max_offset_x = 120
+        max_offset_y = 90
+        target_offset_x = max(-max_offset_x, min(max_offset_x, target_offset_x))
+        target_offset_y = max(-max_offset_y, min(max_offset_y, target_offset_y))
+        update_render_offset(target_offset_x, target_offset_y, 0.05)
+    else:
+        render_offset_fx = 0.0
+        render_offset_fy = 0.0
+        set_render_offset(0, 0)
 
     #game display and update
     player1.update(0+((10*player1.direction)*nolean),0,scale)
