@@ -1,6 +1,6 @@
 # Blockplay - Info
 
-Version actuelle : 0.1.0 
+Version actuelle : 0.2.0 
 
 
 ## Comment jouer

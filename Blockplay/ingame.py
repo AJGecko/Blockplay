@@ -363,15 +363,18 @@ def game(number):
             new_highscore = False
             render_offset_fx = 0.0
             render_offset_fy = 0.0
+            player1.velocity.x = 0
+            player1.velocity.y = 0
             set_render_offset(0, 0)
             
     #steering
     mousesteeringlock = False
+    mouse_steering_active = False
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
         player1.direction = -1
-        if player1.velocity.x < -8:
+        if player1.velocity.x <= -8:
             player1.velocity.x = -8
         else:
             player1.velocity.x -= 1
@@ -381,7 +384,7 @@ def game(number):
             timer_on = True
         mousesteeringlock = True
         player1.direction = 1
-        if player1.velocity.x > 8:
+        if player1.velocity.x >= 8:
             player1.velocity.x = 8
         else:
             player1.velocity.x += 1
@@ -389,28 +392,42 @@ def game(number):
         mousesteeringlock = True
         if player1.velocity.y < 14:
             player1.velocity.y += 1
-    if not keys[pygame.K_LEFT] and not keys[pygame.K_a] and not keys[pygame.K_RIGHT] and not keys[pygame.K_d]:
-        player1.direction = 0
-        player1.velocity.x *= 0.8
-        if abs(player1.velocity.x) < 0.1:
-            player1.velocity.x = 0
 
     #mouse steering
     if es.mouse.pressed(1) and not mousesteeringlock:
         mouse_x, mouse_y = es.mouse.pos
         if mouse_x < midx - 100*scale:
+            mouse_steering_active = True
             player1.direction = -1
-            cam.x -= 8
+            if player1.velocity.x <= -8:
+                player1.velocity.x = -8
+            else:
+                player1.velocity.x -= 1
         elif mouse_x > midx + 100*scale:
+            mouse_steering_active = True
             if not timer_on:
                 timer_on = True
             player1.direction = 1
-            cam.x += 8
+            if player1.velocity.x >= 8:
+                player1.velocity.x = 8
+            else:
+                player1.velocity.x += 1
         else:
             player1.direction = 0
         if mouse_y > midy + 100*scale and jump == 0:
-            cam.y -= 4
+            if player1.velocity.y >= 14:
+                player1.velocity.y = 14
+            else:
+                player1.velocity.y += 1
 
+    # slow down the player when no keys are pressed
+    if not keys[pygame.K_LEFT] and not keys[pygame.K_a] and not keys[pygame.K_RIGHT] and not keys[pygame.K_d] and not mouse_steering_active:
+        player1.direction = 0
+        player1.velocity.x *= 0.8
+        if abs(player1.velocity.x) < 0.1:
+            player1.velocity.x = 0
+
+    # apply the player's horizontal velocity
     cam.x += player1.velocity.x
 
     #jump
@@ -418,6 +435,7 @@ def game(number):
         if can_jump == 1:
             player1.velocity.y = -20
             can_jump = 0
+            jump = 1
 
     #gravity
     cam.y -= player1.velocity.y
@@ -497,6 +515,7 @@ def game(number):
                         cam.y = -platformpositions_y[i] + (half_platform_y + half_player_y) - 1
                         gravity = 0
                         can_jump = 1
+                        jump = 0
                         player1.velocity.y = 0
                         break
                     else:
@@ -524,6 +543,7 @@ def game(number):
                     cam.y = -platformpositions_y[i] + (half_platform_y + half_player_y) - 1
                     gravity = 0
                     can_jump = 1
+                    jump = 0
                     player1.velocity.y = 0
                     break
                 can_jump = 0
