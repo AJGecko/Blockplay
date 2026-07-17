@@ -14,7 +14,7 @@ Blockplay is a simple platformer game where you can move and jump around. The go
 
 I wanted to create a relaxed but fun game, bringing new life to an old idea from one of my Scratch projects and learning more about Pygame along the way.
 
-The [Devlogs](https://flavortown.hackclub.com/projects/17261) from Flavortown.
+The [Devlogs](https://flavortown.hackclub.com/projects/17261) from Flavortown. (For Version 0.1.0 and before.)
 
 This project is inspired by one of my old scratch projects:
 [Blockplay 1.2 on Scratch](https://scratch.mit.edu/projects/967218273)
