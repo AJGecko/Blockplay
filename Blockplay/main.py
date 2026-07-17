@@ -153,7 +153,8 @@ async def main():
             button1.show(0,0,1)
             button4.show(0,-120,1)
             button3.show(0,-240,1)
-            button2.show(0,-360,1)
+            if sys.platform != "emscripten":
+                button2.show(0,-360,1)
 
             #logo display
             logo.show(25,320,0.5)
@@ -302,7 +303,7 @@ async def main():
                 currentmenu = 1
 
         #info screen (loads markdown file)
-        if currentmenu == 7:
+        if currentmenu == 7:  
             #load info file based on current language, default to english if not found
             info_file = INFO_DIR / f"info-{lang.getlang()}.md"
             if not info_file.exists():
@@ -315,7 +316,6 @@ async def main():
             if button_menu.click(0, button_y, mouse.pressed(1)):
                 mouse.button_down = False
                 currentmenu = 1
-
         update_menu_music()
 
         pygame.display.flip()

@@ -21,6 +21,7 @@ settings = {
     "skin": "green",
     "color_scheme": 1,
     "fly": False,
+    "lazycam": False,
     "volume": 35
 }
 

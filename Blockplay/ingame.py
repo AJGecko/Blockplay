@@ -53,6 +53,25 @@ timer_on = False
 finishtime = None
 mouse_x = 0
 mouse_y = 0
+nolean = False
+render_offset_x = 0
+render_offset_y = 0
+render_offset_fx = 0.0
+render_offset_fy = 0.0
+lazycam = es.settings["lazycam"]
+
+
+def set_render_offset(x=0, y=0):
+    global render_offset_x, render_offset_y
+    render_offset_x = x
+    render_offset_y = y
+
+
+def update_render_offset(target_x, target_y, smoothing=0.12):
+    global render_offset_fx, render_offset_fy
+    render_offset_fx += (target_x - render_offset_fx) * smoothing
+    render_offset_fy += (target_y - render_offset_fy) * smoothing
+    set_render_offset(int(render_offset_fx), int(render_offset_fy))
 
 #camera class
 class camera:
@@ -80,12 +99,19 @@ class player:
         self.direction = 0
         self.gravity = 1
 
+        class velocity: 
+            def __init__(self):
+                self.x = 0
+                self.y = 0
+        self.velocity = velocity()
+
     #set player visibility
     def visible(self, v):
         self.vis = v
 
     #show the player
     def show(self):
+        global render_offset_x, render_offset_y
         #lt stands for local texture
         lt = player_texture[folder_names.index(self.skin)]
         lt1 = lt[0]
@@ -98,7 +124,7 @@ class player:
         if self.direction == -1:
             self.out = lt3
         self.out2 = pygame.transform.scale(self.out, (self.sizex*self.lscale,self.sizey*self.lscale))
-        self.out_rect = self.out2.get_rect(center=(midx+self.x, midy+self.y))
+        self.out_rect = self.out2.get_rect(center=(midx+self.x+render_offset_x, midy+self.y+render_offset_y))
         if self.vis == 1:
             screen.blit(self.out2, self.out_rect)
 
@@ -124,10 +150,11 @@ class platform:
 
     #show the platform
     def show(self):
+        global render_offset_x, render_offset_y
         global platform_texture
         self.out1 = platform_texture
         self.out2 = pygame.transform.scale(self.out1, (self.sizex*self.lscale,self.sizey*self.lscale))
-        self.out_rect = self.out2.get_rect(center=(midx+self.x, midy+self.y))
+        self.out_rect = self.out2.get_rect(center=(midx+self.x+render_offset_x, midy+self.y+render_offset_y))
         if self.vis == 1:
             screen.blit(self.out2, self.out_rect)
 
@@ -180,6 +207,7 @@ class finish:
 
     #show the finish line
     def show(self,x,y,lscale):
+        global render_offset_x, render_offset_y
         if "platformpositions_x" not in globals() or len(platformpositions_x) == 0:
             return
 
@@ -190,13 +218,13 @@ class finish:
         cell_size = self._cell_size(lscale)
         columns = self.columns
         total_width = columns * cell_size
-        screen_x = int(midx + (x - cam.x) * pixels_per_world)
+        screen_x = int(midx + (x - cam.x) * pixels_per_world + render_offset_x)
         left_x = screen_x - (total_width // 2)
 
         if left_x >= width or left_x + total_width <= 0:
             return
         
-        anchor_y = midy + (cam.y * pixels_per_world)
+        anchor_y = midy + (cam.y * pixels_per_world) + render_offset_y
         start_row = math.floor((0 - anchor_y) / cell_size) - 1
         end_row = math.ceil((height - anchor_y) / cell_size) + 1
 
@@ -305,7 +333,7 @@ def generate(number, multiplier):
 #runs the game
 def game(number):
     #global variables
-    global midx,midy,width,height,events,scale,font,platform_texture,gravity,last_collision_index,timer_on,finishtime
+    global midx,midy,width,height,events,scale,font,platform_texture,gravity,last_collision_index,timer_on,finishtime,nolean,render_offset_fx,render_offset_fy
     midx,midy,width,height,events,scale = es.basis()
     global gen, p1, p2, p3, p4, p5, menu, jump, can_jump, camy_storage, mouse_x, mouse_y
 
@@ -333,62 +361,89 @@ def game(number):
             jump = 0
             can_jump = 0
             new_highscore = False
+            render_offset_fx = 0.0
+            render_offset_fy = 0.0
+            player1.velocity.x = 0
+            player1.velocity.y = 0
+            set_render_offset(0, 0)
             
     #steering
     mousesteeringlock = False
+    mouse_steering_active = False
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
         player1.direction = -1
-        cam.x -= 8
+        if player1.velocity.x <= -8:
+            player1.velocity.x = -8
+        else:
+            player1.velocity.x -= 1
         mousesteeringlock = True
     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
         if not timer_on:
             timer_on = True
         mousesteeringlock = True
         player1.direction = 1
-        cam.x += 8
+        if player1.velocity.x >= 8:
+            player1.velocity.x = 8
+        else:
+            player1.velocity.x += 1
     if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and jump == 0:
         mousesteeringlock = True
-        cam.y -= 4
-    if not keys[pygame.K_LEFT] and not keys[pygame.K_a] and not keys[pygame.K_RIGHT] and not keys[pygame.K_d]:
-        player1.direction = 0
+        if player1.velocity.y < 14:
+            player1.velocity.y += 1
 
     #mouse steering
     if es.mouse.pressed(1) and not mousesteeringlock:
         mouse_x, mouse_y = es.mouse.pos
         if mouse_x < midx - 100*scale:
+            mouse_steering_active = True
             player1.direction = -1
-            cam.x -= 8
+            if player1.velocity.x <= -8:
+                player1.velocity.x = -8
+            else:
+                player1.velocity.x -= 1
         elif mouse_x > midx + 100*scale:
+            mouse_steering_active = True
             if not timer_on:
                 timer_on = True
             player1.direction = 1
-            cam.x += 8
+            if player1.velocity.x >= 8:
+                player1.velocity.x = 8
+            else:
+                player1.velocity.x += 1
         else:
             player1.direction = 0
         if mouse_y > midy + 100*scale and jump == 0:
-            cam.y -= 4
+            if player1.velocity.y >= 14:
+                player1.velocity.y = 14
+            else:
+                player1.velocity.y += 1
 
-    #jump and gravity
+    # slow down the player when no keys are pressed
+    if not keys[pygame.K_LEFT] and not keys[pygame.K_a] and not keys[pygame.K_RIGHT] and not keys[pygame.K_d] and not mouse_steering_active:
+        player1.direction = 0
+        player1.velocity.x *= 0.8
+        if abs(player1.velocity.x) < 0.1:
+            player1.velocity.x = 0
+
+    # apply the player's horizontal velocity
+    cam.x += player1.velocity.x
+
+    #jump
     if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE] or (mouse_y < midy - 100*scale and es.mouse.pressed(1) and not (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]))) and can_jump == 1:
-        jump = 1
-        can_jump = 0
-        camy_storage = cam.y
-        player1.gravity = 0
-    elif jump == 0:
-        if player1.gravity + 0.1 > 1:
-            player1.gravity = 1
-        else:
-            player1.gravity += 0.1
+        if can_jump == 1:
+            player1.velocity.y = -20
+            can_jump = 0
+            jump = 1
 
-    if jump == 1:
-        if cam.y - camy_storage >= 200 and cam.y - camy_storage < 300:
-            cam.y += 7
-        elif cam.y - camy_storage >= 300:
-            jump = 0
-        else:
-            cam.y += 10
+    #gravity
+    cam.y -= player1.velocity.y
+    
+    if player1.velocity.y < 14:
+        player1.velocity.y += 0.7 * player1.gravity
+    else:
+        player1.velocity.y = 14
 
     #timer
     time = timer(timer_on)
@@ -411,38 +466,91 @@ def game(number):
         timer_on = False
         return "won"
 
-
     difficulty = es.settings.get("difficulty", "normal")
 
     for i in range(number):
+
         platform_rect = pygame.Rect(
             int(platformpositions_x[i] - 200 / 2),
             int(platformpositions_y[i] - 400 / 2),
             200,
             400,
         )
-        if player_rect.colliderect(platform_rect):
-            if difficulty == "easy":
-                cam.y = (player1.sizey / 2 + platform_rect.height / 2) - platformpositions_y[i] - 1
-                gravity = 0
-                can_jump = 1
-                break
 
-            landing_overlap = player_rect.bottom - platform_rect.top
-            if -30 <= landing_overlap <= 40:
-                min_overlap = min(player_rect.right, platform_rect.right) - max(player_rect.left, platform_rect.left)
-                if min_overlap > 5:
-                    cam.y = (player1.sizey / 2 + platform_rect.height / 2) - platformpositions_y[i] - 1
+        edge_tolerance = 5
+        top_y_tolerance = 18
+
+        # Check if the player is landing on the platform from above
+        platform_left = platform_rect.left
+        platform_right = platform_rect.right
+        
+        # Check if the player's bottom is within the top_y_tolerance of the platform's top and if the player's horizontal position overlaps with the platform's width (with some edge tolerance).
+        top_x_ok = (
+            player_rect.right > platform_left - edge_tolerance and
+            player_rect.left < platform_right + edge_tolerance
+        )
+        
+        # Check if the player's bottom is within the top_y_tolerance of the platform's top
+        top_y_ok = abs(player_rect.bottom - platform_rect.top) <= top_y_tolerance
+
+        # Determine if the player is a candidate for landing on the platform based on their vertical velocity and position relative to the platform.
+        landing_candidate = player1.velocity.y >= 0 and top_x_ok and top_y_ok
+
+        # Check for collision between the player and the platform, or if the player is a landing candidate.
+        if player_rect.colliderect(platform_rect) or landing_candidate:
+            half_player_x = player1.sizex / 2
+            half_player_y = player1.sizey / 2
+            half_platform_x = platform_rect.width / 2
+            half_platform_y = platform_rect.height / 2
+            
+            # Calculate the overlap in both horizontal and vertical directions to determine the collision side
+            horizontal_overlap = min(player_rect.right, platform_rect.right) - max(player_rect.left, platform_rect.left)
+            vertical_overlap = min(player_rect.bottom, platform_rect.bottom) - max(player_rect.top, platform_rect.top)
+            
+            # Determine which side the collision occurred on based on the overlap values.
+            if horizontal_overlap > 0 and vertical_overlap > 0:
+                if vertical_overlap < horizontal_overlap:
+                    # vertical collision (top or bottom)
+                    if player_rect.centery < platform_rect.centery and player1.velocity.y >= 0 and top_x_ok:
+                        cam.y = -platformpositions_y[i] + (half_platform_y + half_player_y) - 1
+                        gravity = 0
+                        can_jump = 1
+                        jump = 0
+                        player1.velocity.y = 0
+                        break
+                    else:
+                        if player1.velocity.y < 0: 
+                            player1.velocity.y = 0
+                        cam.y = -platformpositions_y[i] - (half_platform_y + half_player_y)
+                        can_jump = 0
+                        break
+                else:
+                    # horizontal collision (left or right)
+                    nolean = 0
+                    if player_rect.centerx < platform_rect.centerx:
+                        if player1.velocity.x > 0:  
+                            player1.velocity.x = 0
+                        cam.x = platformpositions_x[i] - (half_platform_x + half_player_x)
+                    else:
+                        if player1.velocity.x < 0: 
+                            player1.velocity.x = 0
+                        cam.x = platformpositions_x[i] + (half_platform_x + half_player_x)
+                    can_jump = 0 
+                    break
+            else:
+                # If the player is a landing candidate but not colliding, adjust the camera and player state accordingly.
+                if landing_candidate:
+                    cam.y = -platformpositions_y[i] + (half_platform_y + half_player_y) - 1
                     gravity = 0
                     can_jump = 1
+                    jump = 0
+                    player1.velocity.y = 0
                     break
-            can_jump = 0
-
-    #gravity
-    if jump == 0:
-        cam.y -= 8*(player1.gravity*gravity)
-    
-    gravity = 1
+                can_jump = 0
+        else:
+            # If no collision is detected, reset jump state.
+            nolean = 1
+            can_jump = 0  
 
     # death limit (Adapts to the nearest platform above the player.)
     search_radius = 900
@@ -467,8 +575,23 @@ def game(number):
     if (es.settings["fly"] and keys[pygame.K_u]):
         cam.y += 20
 
+    #smooth visual camera lag (graphics only)
+    lazycam = es.settings["lazycam"]
+    if lazycam:
+        target_offset_x = player1.velocity.x * 12
+        target_offset_y = player1.velocity.y * 7
+        max_offset_x = 120
+        max_offset_y = 90
+        target_offset_x = max(-max_offset_x, min(max_offset_x, target_offset_x))
+        target_offset_y = max(-max_offset_y, min(max_offset_y, target_offset_y))
+        update_render_offset(target_offset_x, target_offset_y, 0.05)
+    else:
+        render_offset_fx = 0.0
+        render_offset_fy = 0.0
+        set_render_offset(0, 0)
+
     #game display and update
-    player1.update(0+(10*player1.direction),0,scale)
+    player1.update(0+((10*player1.direction)*nolean),0,scale)
     player1.show()
     p1.updateauto()
     p1.show()

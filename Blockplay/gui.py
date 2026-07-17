@@ -133,6 +133,7 @@ settingsbuild = {
     "language": ["en","de","fr","es"],
     "skin": list(ingame.folder_names) if len(ingame.folder_names) > 0 else [es.settings["skin"]],
     "color_scheme": sorted(es.color_schemes.keys()),
+    "lazycam": es.settings["lazycam"],
     "fly": es.settings["fly"],
 }
 
@@ -563,7 +564,9 @@ class menu:
             scroll_events = [events] if events is not None else []
         for event in scroll_events:
             if event.type == pygame.MOUSEWHEEL and can_scroll:
-                self.scroll_offset += -event.y * self.scroll_step
+                # event.y > 0 = wheel up, event.y < 0 = wheel down
+                # keep direction consistent with button 4/5 handling below
+                self.scroll_offset += event.y * self.scroll_step
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and can_scroll:
                 if up_rect.collidepoint(event.pos):
                     self.scroll_offset += self.scroll_step

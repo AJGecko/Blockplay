@@ -3,7 +3,7 @@
 
 A Python-based game powered by **Pygame**.
 
-**Current Version:** `0.1.0` 
+**Current Version:** `0.2.0` 
 
 There is also a web version of the game, which is available at [Blockplay Web Version](https://blockplay-game.vercel.app/).
 
